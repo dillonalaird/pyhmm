@@ -10,7 +10,7 @@
 namespace hmm {
     using namespace std;
     using namespace Eigen;
-    using namespace nptypes;
+    //using namespace nptypes;
 
     //template <typename Type>
     void forward_msgs() {}
@@ -19,7 +19,7 @@ namespace hmm {
 //template <typename FloatType, typename IntType = int32_t>
 class hmmcc {
     public:
-        forward_msgs() { hmm::forward_msgs(); }
+        static void forward_msgs() { hmm::forward_msgs(); }
 };
 
 #endif

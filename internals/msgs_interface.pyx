@@ -1,3 +1,8 @@
+# distutils: language = c++
+# distutils: extra_compile_args = -Ofast -std=c++11
+# cython: boundscheck = False
+
+
 import numpy as np
 cimport numpy as np
 
