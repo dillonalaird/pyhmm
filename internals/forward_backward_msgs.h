@@ -5,21 +5,19 @@
 #include <stdint.h>
 #include <limits>
 
-#include "nptypes.h"
+//#include "nptypes.h"
 
 namespace hmm {
     using namespace std;
     using namespace Eigen;
     using namespace nptypes;
 
-    template <typename Type>
-    void forward_msgs() {
-        cout << "Hello, World!" << endl;
-    }
+    //template <typename Type>
+    void forward_msgs() {}
 }
 
-template <typename FloatType, typename IntType = int32_t>
-class hmmcpp {
+//template <typename FloatType, typename IntType = int32_t>
+class hmmcc {
     public:
         forward_msgs() { hmm::forward_msgs(); }
 };
