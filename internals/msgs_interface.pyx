@@ -1,7 +1,7 @@
+# distutils: name = internals.msgs_interface
 # distutils: language = c++
 # distutils: extra_compile_args = -Ofast -std=c++11
 # cython: boundscheck = False
-
 
 import numpy as np
 cimport numpy as np
@@ -16,3 +16,4 @@ cdef extern from "forward_backward_msgs.h":
 def forward_msgs():
     cdef hmmcc ref
     ref.forward_msgs()
+
