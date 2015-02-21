@@ -1,3 +1,4 @@
 ./build
 ./pyhmm
-./internals/*cpp
+./internals/*.cpp
+./*.so
