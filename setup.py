@@ -5,12 +5,12 @@ import numpy as np
 import sys, os
 
 
-py_forward_backward_src = ['internals/forward_backward_msgs_interface.pyx']
+forward_backward_src = ['internals/forward_backward_msgs_interface.pyx']
 
 setup(name='forward_backward',
       cmdclass={'build_ext': build_ext},
       ext_modules=[
-        Extension('py_forward_backward', py_forward_backward_src,
+        Extension('forward_backward', forward_backward_src,
           language='c++',
           include_dirs=[np.get_include(),],
           extra_compile_args=['-std=c++11'])
