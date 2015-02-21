@@ -7,7 +7,7 @@ import sys, os
 
 py_forward_backward_src = ['internals/forward_backward_msgs_interface.pyx']
 
-setup(name='py_forward_backward',
+setup(name='forward_backward',
       cmdclass={'build_ext': build_ext},
       ext_modules=[
         Extension('py_forward_backward', py_forward_backward_src,
