@@ -8,6 +8,7 @@
 
 
 namespace fb {
+  template <typename Type>
   void forward_msgs() {
     std::cout << "Hello, World!" << std::endl;
   }
