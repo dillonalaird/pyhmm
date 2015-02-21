@@ -5,8 +5,7 @@ import numpy as np
 import sys, os
 
 
-py_forward_backward_src = ['internals/forward_backward_msgs.cpp',
-                           'internals/forward_backward_msgs_interface.pyx']
+py_forward_backward_src = ['internals/forward_backward_msgs_interface.pyx']
 
 setup(name='py_forward_backward',
       cmdclass={'build_ext': build_ext},
