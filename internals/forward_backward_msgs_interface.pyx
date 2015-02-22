@@ -11,3 +11,4 @@ def forward_msgs(np.ndarray[np.double_t, ndim=1, mode='c'] pi not None,
     cdef np.ndarray[np.double_t, ndim=2, mode='c'] lalpha = np.zeros_like(lliks)
     fb_msgs.forward_msgs[np.double_t](ltran.shape[0], lliks.shape[0], &pi[0],
             &ltran[0,0], &lliks[0,0], &lalpha[0,0])
+    return lalpha
