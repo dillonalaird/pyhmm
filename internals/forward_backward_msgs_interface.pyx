@@ -12,3 +12,11 @@ def forward_msgs(np.ndarray[np.double_t, ndim=1, mode='c'] pi not None,
     fb_msgs.forward_msgs[np.double_t](ltran.shape[0], lliks.shape[0], &pi[0],
             &ltran[0,0], &lliks[0,0], &lalpha[0,0])
     return lalpha
+
+
+def backward_msgs(np.ndarray[np.double_t, ndim=2, mode='c'] ltran not None,
+                  np.ndarray[np.double_t, ndim=2, mode='c'] lliks not None):
+    cdef np.ndarray[np.double_t, ndim=2, mode='c'] lbeta = np.zero_like(lliks)
+    fb_msgs.backward_msgs[np.double_t](ltran.shape[0], lliks.shape[0], 
+            &ltran[0,0], &lliks[0,0], &lbeta[0,0])
+    return lbeta
