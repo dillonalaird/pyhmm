@@ -2,3 +2,4 @@
 ./pyhmm
 ./internals/*.cpp
 ./*.so
+*pyc
