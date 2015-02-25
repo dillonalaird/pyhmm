@@ -17,6 +17,14 @@ def forward_messages_corr(pi, A, lliks):
 
     return lalpha
 
+def backward_messages_corr(A, lliks):
+    Al = np.log(A)
+    lbeta = np.zeros_like(lliks)
+    for t in xrange(lbeta.shape[0]-2,-1,-1):
+        np.logaddexp.reduce(Al + lbeta[t+1] + lliks[t+1], axis=1, out=lbeta[t])
+
+    return lbeta
+
 
 def test_simple():
     pi = np.array([0.99, 0.01])
@@ -40,8 +48,11 @@ def test_simple():
     lalpha = fb.forward_msgs(pi, A, lliks)
     lalpha_corr = forward_messages_corr(pi, A, lliks)
 
-    #lbeta = fb.backward_msgs(A, lliks)
+    lbeta = fb.backward_msgs(A, lliks)
+    lbeta_corr = backward_messages_corr(A, lliks)
+
     np.testing.assert_almost_equal(lalpha, lalpha_corr)
+    np.testing.assert_almost_equal(lbeta, lbeta_corr)
 
 if __name__ == '__main__':
     test_simple()
