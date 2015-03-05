@@ -29,7 +29,7 @@ def expected_statistics(np.ndarray[np.double_t, ndim=1, mode='c'] pi not None,
     cdef np.ndarray[np.double_t, ndim=2, mode='c'] \
             expected_states = np.zeros_like(lliks)
     cdef np.ndarray[np.double_t, ndim=2, mode='c'] \
-            expected_transcounts = np.zeros_like(lliks)
+            expected_transcounts = np.zeros_like(A)
     fb_msgs.expected_statistics[np.double_t](A.shape[0], lliks.shape[0], &pi[0],
             &A[0,0], &lliks[0,0], &lalpha[0,0], &lbeta[0,0], 
             &expected_states[0,0], &expected_transcounts[0,0])
