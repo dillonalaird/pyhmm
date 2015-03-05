@@ -2,6 +2,7 @@ from __future__ import division
 
 import abc
 import numpy as np
+import forward_backward as fb
 
 
 class HMMBase(object):
@@ -18,7 +19,7 @@ class HMMBase(object):
 
         pass
 
-    def __init__(self, obs):
+    def __init__(self, obs, K, pi, A):
         """
         Initialize the HMM object.
 
@@ -29,8 +30,19 @@ class HMMBase(object):
         """
 
         self.obs = obs
+        self.pi = pi
+        self.A = A
 
-    def forward_msgs_debug(self, obs=None):
+
+    def baum_welch(self):
+        # Expectation Step
+        self.log_likelihoods()
+        self.forward_msgs()
+        self.backward_msgs()
+
+        # Maximization Step
+
+    def forward_msgs(self):
         """
 
         Parameters
@@ -39,15 +51,9 @@ class HMMBase(object):
             A T x D numpy array of T observations in D dimensions.
         """
 
-        ltran = self.mod_tran
-        ll = self.lliks
-        lalpha = self.lalpha
-        lalpha[0,:] = self.mod_init + ll[0,:]
+        self.lalpha = fb.forward_msgs(self.pi, self.A, self.lliks)
 
-        for t in xrange(1, self.T):
-            lalpha[t] = np.logaddexp.reduce(lalpha[t-1] + ltran.T, axis=1) + ll[t]
-
-    def forward_msgs(self, obs=None):
+    def backward_msgs(self):
         """
 
         Parameters
@@ -56,18 +62,4 @@ class HMMBase(object):
             A T x D numpy array of T observations in D dimensions.
         """
 
-        ltran = self.mod_tran
-        ll = self.lliks
-        lalpha = self.lalpha
-        lalpha[0,:] = self.mod_init + ll[0,:]
-
-    def backward_msgs(self, obs=None):
-        """
-
-        Parameters
-        ----------
-        obs : numpy.array
-            A T x D numpy array of T observations in D dimensions.
-        """
-
-        pass
+        self.lbeta = fb.backward_msgs(self.A, self.lliks)
