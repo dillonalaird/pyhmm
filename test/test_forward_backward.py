@@ -1,3 +1,4 @@
+from __future__ import division
 import os, sys, inspect
 
 # this is so we can import from pyhmm
@@ -26,10 +27,10 @@ def backward_messages_corr(A, lliks):
     return lbeta
 
 
-def test_simple():
+def test_simple_fb():
     pi = np.array([0.99, 0.01])
     A = np.array([[0.99, 0.01],
-                     [0.01, 0.99]])
+                  [0.01, 0.99]])
     N = 100
 
     obs = np.empty(N)
@@ -38,11 +39,12 @@ def test_simple():
         for i in xrange(N)])
 
     # lliks needs to have 2 dimensions
-    lliks = np.array([[norm.logpdf(ob, dist[np.round(i/N),0], dist[np.round(i/N),1])]
-        for i,ob in enumerate(obs)])
+    lliks = np.array([[norm.logpdf(ob, dist[np.round(i/N),0], 
+        dist[np.round(i/N),1])] for i,ob in enumerate(obs)])
 
     lliks = np.array([[norm.logpdf(ob, dist[0,0], dist[0,1]),
-                       norm.logpdf(ob, dist[1,0], dist[1,1])] for i,ob in enumerate(obs)])
+                       norm.logpdf(ob, dist[1,0], dist[1,1])] 
+                       for i,ob in enumerate(obs)])
 
 
     lalpha = fb.forward_msgs(pi, A, lliks)
@@ -54,5 +56,35 @@ def test_simple():
     np.testing.assert_almost_equal(lalpha, lalpha_corr)
     np.testing.assert_almost_equal(lbeta, lbeta_corr)
 
+
+def test_expected_states_and_transcount():
+    pi = np.array([0.99, 0.01])
+    A = np.array([[0.99, 0.01],
+                  [0.01, 0.99]])
+    N = 100
+
+    obs = np.empty(N)
+    dist = np.array([[0, 1], [5, 1]])
+    obs = np.array([norm.rvs(dist[np.round(i/N),0], dist[np.round(i/N),1])
+        for i in xrange(N)])
+
+    # lliks needs to have 2 dimensions
+    lliks = np.array([[norm.logpdf(ob, dist[np.round(i/N),0], 
+        dist[np.round(i/N),1])] for i,ob in enumerate(obs)])
+
+    lliks = np.array([[norm.logpdf(ob, dist[0,0], dist[0,1]),
+                       norm.logpdf(ob, dist[1,0], dist[1,1])] 
+                       for i,ob in enumerate(obs)])
+
+
+    lalpha = fb.forward_msgs(pi, A, lliks)
+    lbeta = fb.backward_msgs(A, lliks)
+
+    expected_states, expected_transcounts = fb.expected_statistics(pi, A, lliks,
+            lalpha, lbeta)
+
+    print 'stop'
+
 if __name__ == '__main__':
-    test_simple()
+    #test_simple_fb()
+    test_expected_states_and_transcount()
