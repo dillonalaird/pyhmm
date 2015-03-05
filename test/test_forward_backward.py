@@ -82,8 +82,21 @@ def test_expected_states_and_transcount():
 
     expected_states, expected_transcounts = fb.expected_statistics(pi, A, lliks,
             lalpha, lbeta)
+    expected_states = expected_states / \
+            np.sum(expected_states, axis=1)[:,np.newaxis]
+    expected_transcounts = expected_transcounts / \
+            np.sum(expected_transcounts, axis=1)[:,np.newaxis]
 
-    print 'stop'
+    expected_transcounts_corr = np.array([[1., 0.],
+                                          [0., 1.]])
+    probs = np.array([[1., 0.], [0., 1.]])
+    expected_states_corr = np.array([probs[np.round(i/N)] for i in xrange(N)])
+
+    np.testing.assert_almost_equal(expected_states, expected_states_corr, 
+            decimal=1)
+    np.testing.assert_almost_equal(expected_transcounts, 
+            expected_transcounts_corr, decimal=1)
+
 
 if __name__ == '__main__':
     #test_simple_fb()
