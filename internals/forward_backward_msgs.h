@@ -85,7 +85,8 @@ namespace fb {
     }
 
     //e_expected_states.row(T-1) = (e_lalpha.row(T-1) - log_normalizer).exp();
-    e_expected_states.row(T-1) = (e_lalpha.row(T-1) + e_lbeta.row(T-1)).exp();
+    // don't need to add e_lbeta.row(T-1) here because it's 0
+    e_expected_states.row(T-1) = e_lalpha.row(T-1).exp();
 
     //return log_normalizer;
   }
