@@ -1,6 +1,6 @@
 build/*
 pyhmm
-internals/*.cpp
+internals/forward_backward_msgs_interface.cpp
 *.so
-*pyc
-**/*swp
+**/*.pyc
+**/*.swp
