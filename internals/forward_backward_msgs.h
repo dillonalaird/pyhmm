@@ -67,28 +67,26 @@ namespace fb {
     Type pair_buf[M*M] __attribute__((aligned(16)));
     NPArray<Type> pair(pair_buf, M, M); 
 
-    // try without log_normalizer?
-    //Type cmax;
-    //cmax = e_lalpha.row(T-1).maxCoeff();
-    //Type log_normalizer = log((e_lalpha.row(T-1) - cmax).exp().sum()) + cmax;
+    Type cmax;
+    Type cmax_holder_buf[4] __attribute__((aligned(16)));
+    NPArray<Type> cmax_holder(cmax_holder_buf, 4, 1);
 
     for (int t = 0; t < T-1; ++t) {
-      //pair = e_lA - log_normalizer;
       pair = e_lA;
       pair.colwise() += e_lalpha.row(t).transpose().array();
       pair.rowwise() += e_lbeta.row(t+1) + e_lliks.row(t+1);
 
+      cmax_holder << e_lA.maxCoeff(), e_lalpha.row(t).maxCoeff(), 
+           e_lbeta.row(t+1).maxCoeff(), e_lliks.row(t+1).maxCoeff();
+      cmax = cmax_holder.maxCoeff();
+      pair -= log((pair - cmax).exp().sum()) + cmax;
+
       e_expected_transcounts += pair.exp();
-      //e_expected_states.row(t) = (e_lalpha.row(t) + e_lbeta.row(t) - 
-      //    log_normalizer).exp();
-      e_expected_states.row(t) = (e_lalpha.row(t) + e_lbeta.row(t)).exp();
+      e_expected_states.row(t) = (e_lalpha.row(t) + e_lbeta.row(t));
     }
 
-    //e_expected_states.row(T-1) = (e_lalpha.row(T-1) - log_normalizer).exp();
     // don't need to add e_lbeta.row(T-1) here because it's 0
-    e_expected_states.row(T-1) = e_lalpha.row(T-1).exp();
-
-    //return log_normalizer;
+    e_expected_states.row(T-1) = e_lalpha.row(T-1);
   }
 }
 
