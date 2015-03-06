@@ -27,6 +27,15 @@ class HMMBase(object):
         ----------
         obs : numpy.array
             A T x D numpy array of T observations in D dimensions.
+
+        K : int
+            The number of hidden states to use.
+
+        pi : numpy.array
+            A 1 x K array representing the initial distribution.
+
+        A : numpy.array
+            A K x K matrix representing the transition matrix.
         """
 
         self.obs = obs
@@ -34,32 +43,31 @@ class HMMBase(object):
         self.A = A
 
 
-    def baum_welch(self):
+    def EM(self):
         # Expectation Step
         self.log_likelihoods()
         self.forward_msgs()
         self.backward_msgs()
+        self.expected_statistics()
 
         # Maximization Step
 
     def forward_msgs(self):
         """
-
-        Parameters
-        ----------
-        obs : numpy.array
-            A T x D numpy array of T observations in D dimensions.
         """
 
         self.lalpha = fb.forward_msgs(self.pi, self.A, self.lliks)
 
     def backward_msgs(self):
         """
-
-        Parameters
-        ----------
-        obs : numpy.array
-            A T x D numpy array of T observations in D dimensions.
         """
 
         self.lbeta = fb.backward_msgs(self.A, self.lliks)
+
+    def expected_statistics(self):
+        """
+        """
+
+        self.expected_states, self.expected_transcounts = \
+            fb.expected_statistics(self.pi, self.A, self.lliks, self.lalpha, 
+                                   self.lbeta)
