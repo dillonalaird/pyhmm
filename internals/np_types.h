@@ -17,6 +17,7 @@ namespace nptypes {
 
   template <typename T>
   using NPVector = Map<Matrix<T, Dynamic, 1>, Aligned>;
-};
+}
+
 
 #endif
