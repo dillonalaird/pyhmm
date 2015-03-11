@@ -15,3 +15,14 @@ setup(name='forward_backward',
           include_dirs=[np.get_include(),],
           extra_compile_args=['-std=c++11'])
       ])
+
+gmm_src = ['internals/gmm_interface.pyx']
+
+setup(name='gmm',
+      cmdclass={'build_ext': build_ext},
+      ext_modules=[
+          Extension('gmm', gmm_src,
+            language='c++',
+            include_dirs=[np.get_include(),],
+            extra_compile_args=['-std=c++11'])
+      ])
