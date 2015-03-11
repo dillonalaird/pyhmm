@@ -54,14 +54,14 @@ namespace fb {
   template <typename Type>
   void expected_statistics(int M, int T, Type* pi, Type* A, Type* lliks,
                            Type* lalpha, Type* lbeta,
-                           Type* expected_states, 
+                           Type* lexpected_states, 
                            Type* expected_transcounts) {
     NPArray<Type> e_lA(A, M, M);
     e_lA = e_lA.log();
     NPArray<Type> e_lliks(lliks, T, M);
     NPArray<Type> e_lalpha(lalpha, T, M);
     NPArray<Type> e_lbeta(lbeta, T, M);
-    NPArray<Type> e_expected_states(expected_states, T, M);
+    NPArray<Type> e_lexpected_states(lexpected_states, T, M);
     NPArray<Type> e_expected_transcounts(expected_transcounts, M, M);
 
     Type pair_buf[M*M] __attribute__((aligned(16)));
@@ -82,11 +82,11 @@ namespace fb {
       pair -= log((pair - cmax).exp().sum()) + cmax;
 
       e_expected_transcounts += pair.exp();
-      e_expected_states.row(t) = (e_lalpha.row(t) + e_lbeta.row(t));
+      e_lexpected_states.row(t) = (e_lalpha.row(t) + e_lbeta.row(t));
     }
 
     // don't need to add e_lbeta.row(T-1) here because it's 0
-    e_expected_states.row(T-1) = e_lalpha.row(T-1);
+    e_lexpected_states.row(T-1) = e_lalpha.row(T-1);
   }
 }
 
