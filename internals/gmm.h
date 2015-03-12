@@ -29,7 +29,6 @@ namespace gmm {
                              NPArray<NPVector<Type> > mus, 
                              NPArray<NPMatrix<Type> > sigma_invs,
                              NPArray<Type> lsigma_dets) {
-
     NPArray<Type> probs(L, 1);
     for (int i = 0; i < L; ++i) {
       probs[i] = _log_probability_m(x, mus[i], sigma_invs[i], lsigma_dets[i]);
@@ -37,8 +36,20 @@ namespace gmm {
   }
 
   template <typename Type>
-  void update_parameters(Type* cs, Type* mus, Type* sigmas, 
-                         Type* lexpected_states) {
+  void log_likelihood() { }
+
+  template <typename Type>
+  void update_parameters(int D, int T, int L, Type* cs, Type* mus, Type* sigmas,
+                         Type expected_obs2, Type expected_obs, Type* lweights) {
+    NPArray<Type> e_cs(cs, L, 1);
+    NPArray<Type> e_mus(mus, L, D);
+    // not sure how to initialize this
+    //NPArray<NPMatrix<Type> > e_sigmas(sigmas, L, );
+    NPArray<Type> e_lweights(lweights, T, D);
+
+    for (int t = 0; t < T; ++t) {
+      // do updates
+    }
   }
 }
 
