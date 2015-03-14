@@ -39,17 +39,20 @@ namespace gmm {
   void log_likelihood() { }
 
   template <typename Type>
+  void weighted_sufficient_statistics() { }
+
+  template <typename Type>
   void update_parameters(int D, int T, int L, Type* cs, Type* mus, Type* sigmas,
-                         Type expected_obs2, Type expected_obs, Type* lweights) {
+                         Type* obs, Type* lweights) {
     NPArray<Type> e_cs(cs, L, 1);
     NPArray<Type> e_mus(mus, L, D);
-    // not sure how to initialize this
-    //NPArray<NPMatrix<Type> > e_sigmas(sigmas, L, );
+    // use std::vector here instead?
+    NPArray<Type> e_sigmas(sigmas, L*D, D);
+    /*
+     * for i in e_sigmas:
+     *  e_sigmas[i] = NPMatrix()
+     */
     NPArray<Type> e_lweights(lweights, T, D);
-
-    for (int t = 0; t < T; ++t) {
-      // do updates
-    }
   }
 }
 
