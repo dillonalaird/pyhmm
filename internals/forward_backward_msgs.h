@@ -15,12 +15,12 @@ namespace fb {
   using namespace nptypes;
 
   template <typename Type>
-  void forward_msgs(int M, int T, Type* pi, Type* A, Type* lliks, 
+  void forward_msgs(int S, int T, Type* pi, Type* A, Type* lliks, 
                     Type* lalpha) {
-    NPArray<Type>  e_pi(pi, 1, M);
-    NPMatrix<Type> e_A(A, M, M);
-    NPArray<Type>  e_lliks(lliks, T, M);
-    NPArray<Type>  e_lalpha(lalpha, T, M);
+    NPArray<Type>  e_pi(pi, 1, S);
+    NPMatrix<Type> e_A(A, S, S);
+    NPArray<Type>  e_lliks(lliks, T, S);
+    NPArray<Type>  e_lalpha(lalpha, T, S);
 
     Type cmax;
     e_lalpha.row(0) = e_pi.log() + e_lliks.row(0);
@@ -33,13 +33,13 @@ namespace fb {
   }
 
   template <typename Type>
-  void backward_msgs(int M, int T, Type* A, Type* lliks, Type* lbeta) {
-    NPMatrix<Type>  e_A(A, M, M);
-    NPMatrix<Type>  e_lliks(lliks, T, M);
-    NPMatrix<Type>  e_lbeta(lbeta, T, M);
+  void backward_msgs(int S, int T, Type* A, Type* lliks, Type* lbeta) {
+    NPMatrix<Type>  e_A(A, S, S);
+    NPMatrix<Type>  e_lliks(lliks, T, S);
+    NPMatrix<Type>  e_lbeta(lbeta, T, S);
 
-    Type thesum_buf[M] __attribute__((aligned(16)));
-    NPVector<Type> thesum(thesum_buf, M);
+    Type thesum_buf[S] __attribute__((aligned(16)));
+    NPVector<Type> thesum(thesum_buf, S);
     Type cmax;
 
     e_lbeta.row(T-1).setZero();
@@ -52,20 +52,20 @@ namespace fb {
   }
 
   template <typename Type>
-  void expected_statistics(int M, int T, Type* pi, Type* A, Type* lliks,
+  void expected_statistics(int S, int T, Type* pi, Type* A, Type* lliks,
                            Type* lalpha, Type* lbeta,
                            Type* lexpected_states, 
                            Type* expected_transcounts) {
-    NPArray<Type> e_lA(A, M, M);
+    NPArray<Type> e_lA(A, S, S);
     e_lA = e_lA.log();
-    NPArray<Type> e_lliks(lliks, T, M);
-    NPArray<Type> e_lalpha(lalpha, T, M);
-    NPArray<Type> e_lbeta(lbeta, T, M);
-    NPArray<Type> e_lexpected_states(lexpected_states, T, M);
-    NPArray<Type> e_expected_transcounts(expected_transcounts, M, M);
+    NPArray<Type> e_lliks(lliks, T, S);
+    NPArray<Type> e_lalpha(lalpha, T, S);
+    NPArray<Type> e_lbeta(lbeta, T, S);
+    NPArray<Type> e_lexpected_states(lexpected_states, T, S);
+    NPArray<Type> e_expected_transcounts(expected_transcounts, S, S);
 
-    Type pair_buf[M*M] __attribute__((aligned(16)));
-    NPArray<Type> pair(pair_buf, M, M); 
+    Type pair_buf[S*S] __attribute__((aligned(16)));
+    NPArray<Type> pair(pair_buf, S, S); 
 
     Type cmax;
     Type cmax_holder_buf[4] __attribute__((aligned(16)));
