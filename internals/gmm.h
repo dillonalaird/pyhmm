@@ -51,34 +51,25 @@ namespace gmm {
   template <typename Type>
   void update_parameters(int S, int T, int D, int L, Type* cs, Type* mus, 
                          Type* sigmas, Type* obs, Type* lweights) {
+    int i1;
+    int i2;
+    int i3;
+
     vector<NPArray<Type>, aligned_allocator<NPArray<Type> > > e_cs;
+    for (i1 = 0, i2 = 0; i1 < S, i2 < S*L; ++i1, i2 += L)
+      e_cs[i1] = NPArray<Type>(&cs[i2], L, 1);
+
     vector<vector<NPArray<Type>, aligned_allocator<NPArray<Type> > > > e_mus;
+    for (i1 = 0, i2 = 0, i3 = 0; i1 < S, i2 < L, i3 < S*L*D; ++i1, ++i2, i3 += D)
+      e_mus[i1][i2] = NPArray<Type>(&cs[i3], D, 1);
+
     vector<vector<NPMatrix<Type>, aligned_allocator<NPArray<Type> > > > e_sigmas;
+    for (i1 = 0, i2 = 0, i3 = 0; i1 < S, i2 < L, i3 < S*L*D*D; ++i1, ++i2, i3 += D*D)
+      e_sigmas[i1][i2] = NPMatrix<Type>(&sigmas[i3], D, D);
+
     NPArray<Type> e_obs(obs, T, D);
     NPArray<Type> e_lweights(lweights, T, S);
   }
-
-  /*
-  template <typename Type>
-  void update_parameters(int M, int T, int L, Type* cs, Type* mus, Type* sigmas,
-                         Type* obs, Type* lweights) {
-    NPArray<Type> e_cs(cs, L, 1);
-    NPArray<Type> e_mus(mus, L, D);
-
-    // Can't find better way to do this. Also need special allocator for stl
-    // containers holding Eigen structures.
-    vector<NPMatrix<Type>, aligned_allocator<NPMatrix<Type> > > e_sigmas;
-    int j;
-    int i;
-    for (i = 0, j = 0; i < L, j < D*D; ++i, j += D*D) 
-      e_sigmas[i] = NPMatrix<Type>(&sigmas[j], D, D);
-
-    NPArray<Type> e_lweights(lweights, T, D);
-
-    for (auto it = e_sigmas.begin(); it != e_sigmas.end(); ++it)
-      cout << *it << endl;
-  }
-  */
 }
 
 
