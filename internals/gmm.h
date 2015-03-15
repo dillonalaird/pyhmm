@@ -44,13 +44,20 @@ namespace gmm {
   void weighted_sufficient_statistics() { }
 
   /*
-   * cs     - S x L
-   * mus    - S x L x D
-   * sigmas - S x L x D x D
+   * S - The number of states.
+   * T - The number of observations.
+   * D - The dimension of the observations.
+   * L - The number of mixtures.
+   *
+   * cs     - An S x L array representing the mixutre coefficients.
+   * mus    - An S x L x D array representing the means of the mixtures.
+   * sigmas - An S x L x D x D array representing the covariances of the 
+   *          mixtures.
    */
   template <typename Type>
   void update_parameters(int S, int T, int D, int L, Type* cs, Type* mus, 
                          Type* sigmas, Type* obs, Type* lweights) {
+    // populate Eigen containers
     int i1;
     int i2;
     int i3;
@@ -69,6 +76,20 @@ namespace gmm {
 
     NPArray<Type> e_obs(obs, T, D);
     NPArray<Type> e_lweights(lweights, T, S);
+
+    Type expected_x2_buff[S*L]     __attribute__((aligned(16)));
+    Type expected_x_buff[S*L]      __attribute__((aligned(16)));
+    Type lexpected_count_buff[S*L] __attribute__((aligned(16)));
+    Type lexpected_norm_buff[S]    __attribute__((aligned(16)));
+
+    NPMatrix<Type> expected_x2(expected_x2_buff, S, L);
+    NPMatrix<Type> expected_x(expected_x_buff, S, L);
+    NPMatrix<Type> lexpected_count();
+    NPArray<Type>  lexpected_norm();
+    for (int t = 0; t < T; ++t) 
+      for (int s = 0; s < S; ++s)
+        for (int l = 0; l < L; ++l) {
+        }
   }
 }
 
