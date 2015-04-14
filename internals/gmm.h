@@ -43,6 +43,22 @@ namespace gmm {
   template <typename Type>
   void weighted_sufficient_statistics() { }
 
+  template <typename Type>
+  void get_statistics(int S, int T, int D, int L, Type* obs, Type* lweights) {
+    int i1;
+    int i2;
+
+    vector<vector<NPMatrix<Type>, aligned_allocator<NPMatrix<Type> > > > expected_x2;
+    vector<vector<NPArray<Type>, algined_allocator<NPMatrix<Type> > > > expected_x;
+    NPMatrix<Type> expected_count;
+    NPArray<Type> expected_norm;
+
+    for (int t = 0; t < T; ++t) {
+    }
+
+    // need struct for return
+  }
+
   /*
    * S - The number of states.
    * T - The number of observations.
@@ -70,26 +86,29 @@ namespace gmm {
     for (i1 = 0, i2 = 0, i3 = 0; i1 < S, i2 < L, i3 < S*L*D; ++i1, ++i2, i3 += D)
       e_mus[i1][i2] = NPArray<Type>(&cs[i3], D, 1);
 
-    vector<vector<NPMatrix<Type>, aligned_allocator<NPArray<Type> > > > e_sigmas;
+    vector<vector<NPMatrix<Type>, aligned_allocator<NPMatrix<Type> > > > e_sigmas;
     for (i1 = 0, i2 = 0, i3 = 0; i1 < S, i2 < L, i3 < S*L*D*D; ++i1, ++i2, i3 += D*D)
       e_sigmas[i1][i2] = NPMatrix<Type>(&sigmas[i3], D, D);
 
     NPArray<Type> e_obs(obs, T, D);
     NPArray<Type> e_lweights(lweights, T, S);
 
-    Type expected_x2_buff[S*L]     __attribute__((aligned(16)));
-    Type expected_x_buff[S*L]      __attribute__((aligned(16)));
-    Type lexpected_count_buff[S*L] __attribute__((aligned(16)));
-    Type lexpected_norm_buff[S]    __attribute__((aligned(16)));
+    // these should be precalculated in get_statistics
+    /*
+    Type expected_x2_buff[S*L]    __attribute__((aligned(16)));
+    Type expected_x_buff[S*L]     __attribute__((aligned(16)));
+    Type expected_count_buff[S*L] __attribute__((aligned(16)));
+    Type expected_norm_buff[S]    __attribute__((aligned(16)));
 
     NPMatrix<Type> expected_x2(expected_x2_buff, S, L);
     NPMatrix<Type> expected_x(expected_x_buff, S, L);
-    NPMatrix<Type> lexpected_count();
-    NPArray<Type>  lexpected_norm();
-    for (int t = 0; t < T; ++t) 
-      for (int s = 0; s < S; ++s)
-        for (int l = 0; l < L; ++l) {
-        }
+    NPMatrix<Type> expected_count();
+    NPArray<Type>  expected_norm();
+    */
+
+    for (int s = 0; s < S; ++s)
+      for (int l = 0; l < L; ++l) {
+      }
   }
 }
 
