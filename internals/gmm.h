@@ -26,12 +26,11 @@ namespace gmm {
    * lsigma_det
    */
   template <typename Type, typename Derived>
-  Type _log_probability_m(const ArrayBase<Derived>& x, const ArrayXt<Type> e_mu,
+  Type _log_probability_m(const ArrayBase<Derived>& x, const VectorXt<Type> e_mu,
       const MatrixXt<Type> sigma_inv, const Type lsigma_det) {
-    auto diff = (x - e_mu).matrix();
-    auto descriptive_stat = diff*sigma_inv*diff.transpose();
-    // NOTE: e_mu = [x_1, ..., x_n]
-    return -0.5*(lsigma_det + descriptive_stat + e_mu.cols()*log2pi);
+    auto diff = (x - e_mu.array().transpose()).matrix().transpose();
+    auto descriptive_stat = (diff.transpose()*sigma_inv*diff).coeff(0);
+    return -0.5*(lsigma_det + descriptive_stat + e_mu.rows()*log2pi);
   }
 
   /* 
@@ -52,7 +51,7 @@ namespace gmm {
   template <typename Type, typename Derived>
   ArrayXt<Type> _log_probabilities_mm(int L,
       const ArrayBase<Derived>& x, const ArrayXt<Type>& e_c,
-      const vector<ArrayXt<Type>, aligned_allocator<ArrayXt<Type> > >& e_mus,
+      const vector<VectorXt<Type>, aligned_allocator<VectorXt<Type> > >& e_mus,
       const vector<MatrixXt<Type>, aligned_allocator<MatrixXt<Type> > >& e_sigmas) {
 
     auto lprobs = ArrayXt<Type>(1, L);
@@ -93,7 +92,7 @@ namespace gmm {
   template <typename Type>
   void _weighted_sufficient_statistics(int S, int T, int D, int L,
       const vector<ArrayXt<Type>, aligned_allocator<ArrayXt<Type> > >& e_cs,
-      const vector<vector<ArrayXt<Type>, aligned_allocator<ArrayXt<Type> > > >& e_mus,
+      const vector<vector<VectorXt<Type>, aligned_allocator<VectorXt<Type> > > >& e_mus,
       const vector<vector<MatrixXt<Type>, aligned_allocator<MatrixXt<Type> > > >& e_sigmas,
       const NPArray<Type>& e_obs, const NPArray<Type>& e_lweights,
 
@@ -139,35 +138,31 @@ namespace gmm {
   void update_parameters(int S, int T, int D, int L, Type* cs, Type* mus, 
                          Type* sigmas, Type* obs, Type* lweights) {
     // populate Eigen containers
-    int i1;
-    int i2;
-    int i3;
-
     NPArray<Type> e_obs(obs, T, D);
     NPArray<Type> e_lweights(lweights, T, S);
 
     vector<ArrayXt<Type>, aligned_allocator<ArrayXt<Type> > > e_cs;
-    for (i1 = 0; i1 < S; ++i1)
+    for (int i1 = 0; i1 < S; ++i1)
       e_cs[i1] = NPArray<Type>(&cs[i1*L], 1, L);
 
-    vector<vector<ArrayXt<Type>, aligned_allocator<ArrayXt<Type> > > > e_mus;
-    for (i1 = 0; i1 < S; ++i1)
-      for (i2 = 0; i2 < L; ++i2)
-        e_mus[i1][i2] = NPArray<Type>(&mus[(i1*L+i2)*D], D, 1);
+    vector<vector<VectorXt<Type>, aligned_allocator<VectorXt<Type> > > > e_mus;
+    for (int i1 = 0; i1 < S; ++i1)
+      for (int i2 = 0; i2 < L; ++i2)
+        e_mus[i1][i2] = NPVector<Type>(&mus[(i1*L+i2)*D], D);
 
     vector<vector<MatrixXt<Type>, aligned_allocator<MatrixXt<Type> > > > e_sigmas;
-    for (i1 = 0; i1 < S; ++i1)
-      for (i2 = 0; i2 < L; ++i2)
+    for (int i1 = 0; i1 < S; ++i1)
+      for (int i2 = 0; i2 < L; ++i2)
         e_sigmas[i1][i2] = NPMatrix<Type>(&sigmas[(i1*L+i2)*D*D], D, D);
 
     vector<vector<MatrixXt<Type>, aligned_allocator<MatrixXt<Type> > > > expected_x2;
-    for (i1 = 0; i1 < S; ++i1)
-      for (i2 = 0; i2 < L; ++i2)
+    for (int i1 = 0; i1 < S; ++i1)
+      for (int i2 = 0; i2 < L; ++i2)
         expected_x2[i1][i2] = MatrixXt<Type>(D, D);
 
     vector<vector<ArrayXt<Type>, aligned_allocator<ArrayXt<Type> > > > expected_x;
-    for (i1 = 0; i1 < S; ++i1)
-      for (i2 = 0; i2 < L; ++i2)
+    for (int i1 = 0; i1 < S; ++i1)
+      for (int i2 = 0; i2 < L; ++i2)
         expected_x[i1][i2] = ArrayXt<Type>(1, D);
 
     auto expected_counts = MatrixXt<Type>(S, L);
@@ -176,10 +171,13 @@ namespace gmm {
         e_lweights, expected_x2, expected_x, expected_counts);
 
     // update parameters
-    for (int s = 0; s < S; ++s)
+    for (int s = 0; s < S; ++s) {
+      e_cs[s] = expected_counts.row(s)/expected_counts.row(s).sum();
       for (int l = 0; l < L; ++l) {
-        e_cs[s]
+        e_mus[s][l] = expected_x[s][l]/expected_counts.coeff(s, l);
+        e_sigmas[s][l] = expected_x2[s][l] - (e_mus[s][l]*e_mus[s][l].transpose()).matrix();
       }
+    }
   }
 }
 
