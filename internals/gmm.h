@@ -38,6 +38,7 @@ namespace gmm {
    *
    * L
    * x
+   * e_c
    * e_mus
    * e_sigmas
    *
@@ -60,6 +61,37 @@ namespace gmm {
       auto lsigma_det = log(e_sigmas[l].determinant());
       lprobs(1, l) = log(e_c.coeff(l)) + _log_probability_m<Type>(x, e_mus[l], sigma_inv, lsigma_det);
     }
+    return lprobs;
+  }
+
+  /*
+   * Multivariate Gaussian Mixture Model. This is the same as 
+   * _log_probabilities_mm but takes in the inverse covariance's and the log
+   * determinant's of the covariances so they don't have to be re-calculated.
+   *
+   * L
+   * x
+   * e_c
+   * e_mus
+   * sigma_invs
+   * lsigma_dets
+   *
+   * Notes:
+   *
+   * Taking Eigen types as arguments.
+   * eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+   */
+  template <typename Type, typename Derived>
+  ArrayXt<Type> _log_probabilities_mm_fast(int L,
+      const ArrayBase<Derived>& x, const ArrayXt<Type>& e_c,
+      const vector<VectorXt<Type>, aligned_allocator<VectorXt<Type> > >& e_mus,
+      const vector<MatrixXt<Type>, aligned_allocator<MatrixXt<Type> > >& sigma_invs,
+      const vector<Type> lsigma_dets) {
+
+    auto lprobs = ArrayXt<Type>(1, L);
+    for (int l = 0; l < L; ++l)
+      lprobs(1, l) = log(e_c.coeff(l)) + _log_probability_m<Type>(x, e_mus[l], sigma_invs[l], lsigma_dets[l]);
+
     return lprobs;
   }
 
@@ -100,6 +132,15 @@ namespace gmm {
       vector<vector<ArrayXt<Type>, aligned_allocator<ArrayXt<Type> > > >& expected_x,
       MatrixXt<Type>& expected_count) {
 
+    // precalculate inverses and log determinants
+    vector<vector<MatrixXt<Type>, aligned_allocator<MatrixXt<Type> > > > sigma_invs;
+    vector<vector<Type> > lsigma_dets;
+    for (int s = 0; s < S; ++s)
+      for (int l = 0; l < L; ++l) {
+        sigma_invs[s][l] = e_sigmas[s][l].inverse();
+        lsigma_dets[s][l] = log(e_sigmas[s][l].determinant());
+      }
+
     auto lprobs = ArrayXt<Type>(1, L);
     auto component_weight = ArrayXt<Type>(1, L);
     auto x2 = MatrixXt<Type>(D, D);
@@ -107,7 +148,9 @@ namespace gmm {
     for (int t = 0; t < T; ++t) {
       x2 = e_obs.row(t)*e_obs.row(t).transpose();
       for (int s = 0; s < S; ++s) {
-        lprobs = _log_probabilities_mm<Type>(L, e_obs.row(t), e_cs[s], e_mus[s], e_sigmas[s]);
+        //lprobs = _log_probabilities_mm<Type>(L, e_obs.row(t), e_cs[s], e_mus[s], e_sigmas[s]);
+        lprobs = _log_probabilities_mm_fast<Type>(L, e_obs.row(t), e_cs[s], e_mus[s], 
+            sigma_invs[s], lsigma_dets[s]);
         component_weight = (exp(e_lweights.coeff(t, s))*lprobs.exp())/lprobs.exp().sum();
 
         expected_count.row(s) += component_weight.matrix();
