@@ -156,12 +156,12 @@ namespace gmm {
     vector<vector<ArrayXt<Type>, aligned_allocator<ArrayXt<Type> > > > e_mus;
     for (i1 = 0; i1 < S; ++i1)
       for (i2 = 0; i2 < L; ++i2)
-        e_mus[i1][i2] = NPArray<Type>(&mus[(i1+1)*(i2+1)*D], D, 1);
+        e_mus[i1][i2] = NPArray<Type>(&mus[(i1*L+i2)*D], D, 1);
 
     vector<vector<MatrixXt<Type>, aligned_allocator<MatrixXt<Type> > > > e_sigmas;
     for (i1 = 0; i1 < S; ++i1)
       for (i2 = 0; i2 < L; ++i2)
-        e_sigmas[i1][i2] = NPMatrix<Type>(&sigmas[(i1+1)*(i2+1)*D*D], D, D);
+        e_sigmas[i1][i2] = NPMatrix<Type>(&sigmas[(i1*L+i2)*D*D], D, D);
 
     vector<vector<MatrixXt<Type>, aligned_allocator<MatrixXt<Type> > > > expected_x2;
     for (i1 = 0; i1 < S; ++i1)
