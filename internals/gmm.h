@@ -132,8 +132,6 @@ namespace gmm {
    *          mixtures.
    *
    * Notes:
-   * 16-byte-aligned allocator must be used when putting Eigen types in STL
-   * containers.
    *
    * eigen.tuxfamily.org/dox-devel/gropu__TopicStlContainers.html
    */
@@ -150,8 +148,7 @@ namespace gmm {
 
     vector<ArrayXt<Type>, aligned_allocator<ArrayXt<Type> > > e_cs;
     for (i1 = 0; i1 < S; ++i1)
-      for (i2 = 0; i2 < S*L; i2 += L)
-        e_cs[i1] = NPArray<Type>(&cs[i2], L, 1);
+      e_cs[i1] = NPArray<Type>(&cs[i1*L], 1, L);
 
     vector<vector<ArrayXt<Type>, aligned_allocator<ArrayXt<Type> > > > e_mus;
     for (i1 = 0; i1 < S; ++i1)
@@ -177,6 +174,12 @@ namespace gmm {
 
     _weighted_sufficient_statistics(S, T, D, L, e_cs, e_mus, e_sigmas, e_obs,
         e_lweights, expected_x2, expected_x, expected_counts);
+
+    // update parameters
+    for (int s = 0; s < S; ++s)
+      for (int l = 0; l < L; ++l) {
+        e_cs[s]
+      }
   }
 }
 
