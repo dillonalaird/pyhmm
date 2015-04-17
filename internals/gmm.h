@@ -175,7 +175,8 @@ namespace gmm {
       e_cs[s] = expected_counts.row(s)/expected_counts.row(s).sum();
       for (int l = 0; l < L; ++l) {
         e_mus[s][l] = expected_x[s][l]/expected_counts.coeff(s, l);
-        e_sigmas[s][l] = expected_x2[s][l] - (e_mus[s][l]*e_mus[s][l].transpose()).matrix();
+        e_sigmas[s][l] = (expected_x2[s][l] - expected_counts.coeff(s, l)*
+            (e_mus[s][l]*e_mus[s][l].transpose()).matrix())/expected_counts.coeff(s, l);
       }
     }
   }
