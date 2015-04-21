@@ -174,8 +174,8 @@ namespace gmm {
    *          mixtures.
    *
    * Notes:
+   * eigen.tuxfamily.org/dox/gropu__TutorialMapClass.html
    * eigen.tuxfamily.org/dox-devel/group__TopicStlContainers.html
-   * eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html
    */
   template <typename Type>
   void update_parameters(int S, int T, int D, int L, Type* cs, Type* mus, 
@@ -184,69 +184,24 @@ namespace gmm {
     NPArray<Type> e_obs(obs, T, D);
     NPArray<Type> e_lweights(lweights, T, S);
 
-    for (int i = 0; i < S*L; ++i) {
-      std::cout << i << " cs[i] = " << cs[i] << std::endl;
-      //std::cout << i << " &cs[i] = " << &cs[i] << std::endl;
-    }
-    
-    int i = 0;
     vector<NPArray<Type> > e_cs;
-
-    // segfault
-    //e_cs.push_back(NPArray<Type>(&cs[L], 1, L));
-    //std::cout << e_cs[0] << std::endl;
-    
-    /*
-    auto tmp0 = NPArray<Type>(&cs[0*L], 1, L);
-    std::cout << tmp0 << std::endl;
-
-    auto tmp2 = NPArray<Type>(&cs[2*L], 1, L);
-    std::cout << tmp2 << std::endl;
-    */
-
-    auto tmpX = NPArray<Type>(&cs[2*L-2], 1, L);
-    std::cout << tmpX << std::endl;
-
-    auto tmpY = NPArray<Type>(&cs[0*L+2], 1, L);
-    std::cout << tmpY << std::endl;
-
-    std::cout << "coefficients" << std::endl;
-    auto tmp1 = NPArray<Type>(&cs[1*L], 1, L);
-    std::cout << tmp1.coeff(0,0) << std::endl;
-    std::cout << tmp1.coeff(0,1) << std::endl;
-    std::cout << tmp1.coeff(0,2) << std::endl;
-
-    // segfault
-    std::cout << tmp1 << std::endl;
-
-    for (int i1 = 0; i1 < S; ++i1) {
-      std::cout << "push back " << i1*L << std::endl;
+    for (int i1 = 0; i1 < S; ++i1)
       e_cs.push_back(NPArray<Type>(&cs[i1*L], 1, L));
-      std::cout << cs[i1*L] << std::endl;
 
-      //for (int i2 = i1*L; i2 < i1*L+L; ++i2)
-      //  std::cout << i2 << " cs[i2] = " << cs[i2] << std::endl;
 
-      //std::cout << i << " e_cs[i] = " << e_cs[i] << std::endl;
-      ++i;
-    }
-
-    /*
     vector<vector<NPVector<Type> > > e_mus;
     for (int i1 = 0; i1 < S; ++i1) {
       e_mus.push_back(vector<NPVector<Type> >());
       for (int i2 = 0; i2 < L; ++i2)
         e_mus[i1].push_back(NPVector<Type>(&mus[(i1*L+i2)*D], D));
     }
-    */
 
-    /*
     vector<vector<NPMatrix<Type> > > e_sigmas;
-    for (int i1 = 0; i1 < S; ++i1)
-      for (int i2 = 0; i2 < L; ++i2) {
-        e_sigmas.push_back(vector<NPMatrix<Type> >());
+    for (int i1 = 0; i1 < S; ++i1) {
+      e_sigmas.push_back(vector<NPMatrix<Type> >());
+      for (int i2 = 0; i2 < L; ++i2)
         e_sigmas[i1].push_back(NPMatrix<Type>(&sigmas[(i1*L+i2)*D*D], D, D));
-      }
+    }
 
     vector<vector<MatrixXt<Type> > > expected_x2;
     for (int i1 = 0; i1 < S; ++i1)
@@ -263,35 +218,21 @@ namespace gmm {
       }
 
     auto expected_counts = MatrixXt<Type>(S, L);
-    */
 
-    //DEBUG
-    std::cout << "0: " << e_cs[0] << std::endl;
-    std::cout << "2: " << e_cs[2] << std::endl;
-    std::cout << "4: " << e_cs[4] << std::endl;
-    // segfault?
-    std::cout << "3: " << e_cs[3] << std::endl;
-    std::cout << "1: " << e_cs[1] << std::endl;
-
-    std::cout << "e_cs =" << std::endl;
-    for (int i1 = 0; i1 < S; ++i1) {
-      std::cout << i1 << std::endl;
-      std::cout << e_cs[i1] << std::endl;
-    }
+    // DEBUG
+    cout << "e_cs = " << endl;
+    for (int i1 = 0; i1 < S; ++i1) 
+      cout << e_cs[i1] << endl;
     
-    /*
-    std::cout << "e_mus =" << std::endl;
+    cout << "e_mus =" << endl;
     for (int i1 = 0; i1 < S; ++i1)
       for (int i2 = 0; i2 < L; ++i2)
-        std::cout << e_mus[i1][i2] << std::endl;
-    */
+        cout << e_mus[i1][i2] << endl;
 
-    /*
     std::cout << "e_sigmas =" << std::endl;
     for (int i1 = 0; i1 < S; ++i1)
       for (int i2 = 0; i2 < L; ++i2)
-        std::cout << e_sigmas[i1][i2] << std::endl;
-    */
+        cout << e_sigmas[i1][i2] << endl;
 
     /*
     _weighted_sufficient_statistics(S, T, D, L, e_cs, e_mus, e_sigmas, e_obs,
