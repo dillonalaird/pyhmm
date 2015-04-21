@@ -13,8 +13,7 @@ def test_constructors():
     S = 5
     L = 3
     D = 3
-    #cs = np.array([np.ones(L)/L for _ in xrange(S)])
-    cs = np.arange(S*L).reshape(S, L).astype(np.float64)
+    cs = np.array([np.ones(L)/L for _ in xrange(S)])
     mus = np.array([[np.ones(D) for _ in xrange(L)] for _ in xrange(S)])
     sigmas = np.array([[np.eye(D) for _ in xrange(L)] for _ in xrange(S)])
 
