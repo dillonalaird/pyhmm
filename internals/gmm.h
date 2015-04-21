@@ -27,7 +27,7 @@ namespace gmm {
    */
   template <typename Type, typename Derived>
   Type _log_probability_m(const ArrayBase<Derived>& x, const NPVector<Type> e_mu,
-      const MatrixXt<Type> sigma_inv, const Type lsigma_det) {
+      const internal::inverse_impl<NPMatrix<Type> >& sigma_inv, const Type lsigma_det) {
     auto diff = (x - e_mu.array().transpose()).matrix().transpose();
     auto descriptive_stat = (diff.transpose()*sigma_inv*diff).coeff(0);
     return -0.5*(lsigma_det + descriptive_stat + e_mu.rows()*log2pi);
@@ -53,7 +53,7 @@ namespace gmm {
   ArrayXt<Type> _log_probabilities_mm(int L,
       const ArrayBase<Derived>& x, const NPArray<Type>& e_c,
       const vector<NPVector<Type> >& e_mus,
-      const vector<NPMatrix<Type> >& e_sigmas) {
+      const vector<internal::inverse_impl<NPMatrix<Type> > >& e_sigmas) {
 
     auto lprobs = ArrayXt<Type>(1, L);
     for (int l = 0; l < L; ++l) {
@@ -86,7 +86,7 @@ namespace gmm {
   ArrayXt<Type> _log_probabilities_mm_fast(int L,
       const ArrayBase<Derived>& x, const NPArray<Type>& e_c,
       const vector<NPVector<Type> >& e_mus,
-      const vector<MatrixXt<Type> >& sigma_invs,
+      const vector<internal::inverse_impl<NPMatrix<Type> > >& sigma_invs,
       const vector<Type> lsigma_dets) {
 
     auto lprobs = ArrayXt<Type>(1, L);
@@ -98,6 +98,8 @@ namespace gmm {
   }
 
   /*
+   * Contant Paramters:
+   *
    * S - The number of states.
    * T - The number of observations.
    * D - The dimension of the observations.
@@ -111,6 +113,8 @@ namespace gmm {
    *            the covariances of the mixtures.
    * e_obs      - A T x D NPArray representing the observations.
    * e_lweights - A T x S NPArray representing the state weights.
+   *
+   * Modified Paramters:
    *
    * expected_x2     - An S x L x D x D vector of vectors of NPMatrix's that 
    *                 will contain the expected observations squared.
@@ -135,13 +139,16 @@ namespace gmm {
       MatrixXt<Type>& expected_counts) {
 
     // precalculate inverses and log determinants
-    vector<vector<MatrixXt<Type> > > sigma_invs;
+    vector<vector<internal::inverse_impl<NPMatrix<Type> > > > sigma_invs;
     vector<vector<Type> > lsigma_dets;
-    for (int s = 0; s < S; ++s)
+    for (int s = 0; s < S; ++s) {
+      sigma_invs.push_back(vector<internal::inverse_impl<NPMatrix<Type> > >());
+      lsigma_dets.push_back(vector<Type>());  
       for (int l = 0; l < L; ++l) {
-        sigma_invs[s][l] = e_sigmas[s][l].inverse();
-        lsigma_dets[s][l] = log(e_sigmas[s][l].determinant());
+        sigma_invs[s].push_back(e_sigmas[s][l].inverse());
+        lsigma_dets[s].push_back(log(e_sigmas[s][l].determinant()));
       }
+    }
 
     auto lprobs = ArrayXt<Type>(1, L);
     auto component_weight = ArrayXt<Type>(1, L);
@@ -204,6 +211,7 @@ namespace gmm {
         e_sigmas[i1].push_back(NPMatrix<Type>(&sigmas[(i1*L+i2)*D*D], D, D));
     }
 
+    // these are incorrect
     vector<vector<MatrixXt<Type> > > expected_x2;
     for (int i1 = 0; i1 < S; ++i1)
       for (int i2 = 0; i2 < L; ++i2) {
@@ -221,6 +229,7 @@ namespace gmm {
     auto expected_counts = MatrixXt<Type>(S, L);
 
     // DEBUG
+    /*
     cout << "e_cs = " << endl;
     for (int i1 = 0; i1 < S; ++i1) 
       cout << e_cs[i1] << endl;
@@ -234,6 +243,7 @@ namespace gmm {
     for (int i1 = 0; i1 < S; ++i1)
       for (int i2 = 0; i2 < L; ++i2)
         cout << e_sigmas[i1][i2] << endl;
+    */
 
     _weighted_sufficient_statistics(S, T, D, L, e_cs, e_mus, e_sigmas, e_obs,
         e_lweights, expected_x2, expected_x, expected_counts);
