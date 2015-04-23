@@ -10,7 +10,7 @@ import gmm
 
 def test_constructors():
     T = 10
-    S = 5
+    S = 3
     L = 3
     D = 3
     cs = np.array([np.ones(L)/L for _ in xrange(S)])
@@ -21,6 +21,10 @@ def test_constructors():
     lweights = np.ones((T, D))/D
 
     gmm.update_parameters(cs, mus, sigmas, obs, lweights)
+
+    print "cs = ", cs
+    print "mus = ", mus
+    print "sigmas = ", sigmas
 
 
 if __name__ == '__main__':
