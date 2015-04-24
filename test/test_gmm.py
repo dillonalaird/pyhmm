@@ -4,6 +4,7 @@ import os, sys, inspect
 # this is so we can import from pyhmm
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 
+from scipy.stats import multivariate_normal as mnorm
 import numpy as np
 import gmm
 
@@ -27,5 +28,24 @@ def test_constructors():
     print "sigmas = ", sigmas
 
 
+def test1():
+    T = 100
+    S = 3
+    L = 3
+    D = 3
+
+    cs = np.array([np.ones(L)/L for _ in xrange(S)])
+    mus = np.array([[0,0,0], [1,0,0], [0,0,1],
+                    [0,5,5], [1,5,5], [0,5,6],
+                    [5,0,5], [5,1,5], [5,0,6]])
+    sigmas = np.array([[np.eye(D) for _ in xrange(L)] for _ in xrange(S)])
+
+    obs = np.array([mnorm.rvs(mean=mus[s][l], cov=sigmas[s][l]) 
+        for l in xrange(L) for s in xrange(S) for _ in xrange(T)])
+
+    print 'stop'
+
+
 if __name__ == '__main__':
-    test_constructors()
+    #test_constructors()
+    test1()

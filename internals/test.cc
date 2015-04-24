@@ -1,7 +1,8 @@
-//#include <vector>
+#include <vector>
 #include <iostream>
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
+#include <Eigen/LU>
 #include "np_types.h"
 #include "eigen_types.h"
 
@@ -46,12 +47,17 @@ void test2(int S, int L, Type* cs) {
   auto tmp2 = NPArray<Type>(&cs[2*L], 1, L);
   std::cout << tmp2 << std::endl;
 
-  auto tmp1 = NPArray<Type>(&cs[1*L], 1, L);
+  //auto tmp1 = NPArray<Type>(&cs[1*L], 1, L);
+  auto tmp = Map<Array<Type, Dynamic, Dynamic, RowMajor> >(&cs[1*L], 1, L);
+  std::cout << "stop" << std::endl;
+
+  /*
   std::cout << tmp1.coeff(0,0) << std::endl;
   std::cout << tmp1.coeff(0,1) << std::endl;
   std::cout << tmp1.coeff(0,2) << std::endl;
 
   std::cout << tmp1 << std::endl;
+  */
 }
 
 
@@ -72,7 +78,6 @@ int main() {
    * lsigma_det = 0
    */
 
-  /*
   int D = 3;
   auto x = ArrayXt<double>(1, D);
   x << 1,2,3;
@@ -96,12 +101,22 @@ int main() {
   std::cout << lsigma_det << std::endl;
 
   test<double>(x, e_mu, e_sigma_inv, lsigma_det);
-  */
 
 
+  /*
   int S = 3;
   int L = 3;
   double cs[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
   test2<double>(S, L, cs);
+  */
+
+  /*
+  vector<vector<internal::inverse_impl<NPMatrix<double> > > > sigma_invs;
+  double sigma[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+  NPMatrix<double> e_sigma(sigma, 3, 3);
+  sigma_invs.push_back(vector<internal::inverse_impl<NPMatrix<double> > >());
+  sigma_invs[0].push_back(e_sigma.inverse());
+  */
 }
+
