@@ -52,6 +52,24 @@ namespace fb {
   }
 
   template <typename Type>
+  void log_weights(int S, int T, Type* lalpha, Type* lbeta, Type* lweights) {
+    NPArray<Type> e_lalpha(lalpha, T, S);
+    NPArray<Type> e_lbeta(lbeta, T, S);
+    NPArray<Type> e_lweights(lweights, T, S);
+
+    Type thesum_buf[S] __attribute__((aligned(16)));
+    NPVector<Type> thesum(thesum_buf, S);
+    Type abmax;
+
+    for (int t = 0; t < T; ++t) {
+      thesum = e_lalpha.row(t) + e_lbeta.row(t);
+      abmax = thesum.maxCoeff();
+      e_lweights.row(t) = e_lalpha.row(t) + e_lbeta.row(t) - 
+        (log((e_lalpha.row(t) + e_lbeta.row(t) - abmax).exp().sum()) + abmax);
+    }
+  }
+
+  template <typename Type>
   void expected_statistics(int S, int T, Type* pi, Type* A, Type* lliks,
                            Type* lalpha, Type* lbeta,
                            Type* lexpected_states, 
