@@ -51,6 +51,10 @@ namespace fb {
     }
   }
 
+  /*
+   * Notes:
+   * These are log weights for states. These don't include log likelihoods.
+   */
   template <typename Type>
   void log_weights(int S, int T, Type* lalpha, Type* lbeta, Type* lweights) {
     NPArray<Type> e_lalpha(lalpha, T, S);
