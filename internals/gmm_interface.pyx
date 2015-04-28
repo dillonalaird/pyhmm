@@ -12,3 +12,15 @@ def update_parameters(np.ndarray[np.double_t, ndim=2, mode='c'] cs not None,
             mus[0,0].shape[0], mus[0].shape[0], &cs[0,0], &mus[0,0,0],
             &sigmas[0,0,0,0], &obs[0,0], &lweights[0,0])
     return (cs, mus, sigmas)
+
+def log_likelihood(np.ndarray[np.double_t, ndim=2, mode='c'] cs not None,
+                   np.ndarray[np.double_t, ndim=3, mode='c'] mus not None,
+                   np.ndarray[np.double_t, ndim=4, mode='c'] sigmas not None,
+                   np.ndarray[np.double_t, ndim=2, mode='c'] obs not None):
+    cdef np.ndarray[np.double_t, ndim=2, mode='c'] lliks = np.zeros((obs.shape[0], 
+            cs.shape[0]))
+    gmm.log_likelihood[np.double_t](cs.shape[0], obs.shape[0], mus[0,0].shape[0], 
+            mus[0].shape[0], &cs[0,0], &mus[0,0,0], &sigmas[0,0,0,0], &obs[0,0], 
+            &lliks[0,0])
+    return lliks
+                   

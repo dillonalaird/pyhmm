@@ -156,6 +156,7 @@ namespace gmm {
     }
 
     auto lprobs = ArrayXt<Type>(1, L).setZero();
+    Type pmax;
     auto component_weight = ArrayXt<Type>(1, L).setZero();
     auto x2 = MatrixXt<Type>(D, D).setZero();
 
@@ -165,7 +166,10 @@ namespace gmm {
       for (int s = 0; s < S; ++s) {
         lprobs = _log_probabilities_mm_fast<Type>(L, ob, e_cs[s], e_mus[s], 
             sigma_invs[s], lsigma_dets[s]);
-        component_weight = (exp(e_lweights.coeff(t, s))*lprobs.exp())/lprobs.exp().sum();
+
+        pmax = lprobs.maxCoeff();
+        component_weight = ((e_lweights.coeff(t, s) + lprobs) -
+            (log((lprobs - pmax).exp().sum()) + pmax)).exp();
 
         expected_counts.row(s) += component_weight.matrix();
         for (int l = 0; l < L; ++l) {
@@ -217,7 +221,6 @@ namespace gmm {
         e_sigmas[i1].push_back(NPMatrix<Type>(&sigmas[(i1*L+i2)*D*D], D, D));
     }
 
-    // these are incorrect
     vector<vector<MatrixXt<Type> > > expected_x2;
     for (int i1 = 0; i1 < S; ++i1) {
       expected_x2.push_back(vector<MatrixXt<Type> >());
@@ -254,13 +257,107 @@ namespace gmm {
     _weighted_sufficient_statistics(S, T, D, L, e_cs, e_mus, e_sigmas, e_obs,
         e_lweights, expected_x2, expected_x, expected_counts);
 
+    /*
+    cout << "expected_counts = " << endl;
+    cout << expected_counts      << endl;
+
+    cout << "expected_x2 = "     << endl;
+    for (auto it = expected_x2.begin(); it != expected_x2.end(); ++it)
+      for (auto itt = it->begin(); itt != it->end(); ++itt)
+        cout << *itt << endl;
+
+    cout << "expected_x = "      << endl;
+    for (auto it = expected_x.begin(); it != expected_x.end(); ++it)
+      for (auto itt = it->begin(); itt != it->end(); ++itt)
+        cout << *itt << endl;
+    */
+
     // update parameters
     for (int s = 0; s < S; ++s) {
       e_cs[s] = expected_counts.row(s)/expected_counts.row(s).sum();
+      cout << "expected_counts = " << endl;
+      cout << expected_counts << endl;
       for (int l = 0; l < L; ++l) {
         e_mus[s][l] = expected_x[s][l].transpose()/expected_counts.coeff(s, l);
+        cout << "expected_x[" << s << "][" << l << "] = " << endl;
+        cout << expected_x[s][l] << endl;
         e_sigmas[s][l] = (expected_x2[s][l] - expected_counts.coeff(s, l)*
             (e_mus[s][l]*e_mus[s][l].transpose()).matrix())/expected_counts.coeff(s, l);
+      }
+    }
+  }
+
+  /*
+   * Calculates log likelihood for each GMM for each state.
+   *
+   * S - The number of states.
+   * T - The number of observations.
+   * D - The dimension of the observations.
+   * L - The number of mixtures.
+   *
+   * cs     - An S x L array representing the mixutre coefficients.
+   * mus    - An S x L x D array representing the means of the mixtures.
+   * sigmas - An S x L x D x D array representing the covariances of the 
+   *          mixtures.
+   *
+   * obs   - A T x D array representing the observations.
+   * lliks - A T x S array that will hold the log likelihoods of each GMM for 
+   *       each state
+   *
+   */
+  template <typename Type>
+  void log_likelihood(int S, int T, int D, int L, Type* cs, Type* mus, 
+                      Type* sigmas, Type* obs, Type* lliks) {
+    // duplicate code {
+    // populate Eigen containers
+    NPArray<Type> e_obs(obs, T, D);
+    NPArray<Type> e_lliks(lliks, T, S);
+
+    vector<NPArray<Type> > e_cs;
+    for (int i1 = 0; i1 < S; ++i1)
+      e_cs.push_back(NPArray<Type>(&cs[i1*L], 1, L));
+
+
+    vector<vector<NPVector<Type> > > e_mus;
+    for (int i1 = 0; i1 < S; ++i1) {
+      e_mus.push_back(vector<NPVector<Type> >());
+      for (int i2 = 0; i2 < L; ++i2)
+        e_mus[i1].push_back(NPVector<Type>(&mus[(i1*L+i2)*D], D));
+    }
+
+    vector<vector<NPMatrix<Type> > > e_sigmas;
+    for (int i1 = 0; i1 < S; ++i1) {
+      e_sigmas.push_back(vector<NPMatrix<Type> >());
+      for (int i2 = 0; i2 < L; ++i2)
+        e_sigmas[i1].push_back(NPMatrix<Type>(&sigmas[(i1*L+i2)*D*D], D, D));
+    }
+    // }
+
+    // duplicate code {
+    vector<vector<MatrixXt<Type> > > sigma_invs;
+    vector<vector<Type> > lsigma_dets;
+    for (int s = 0; s < S; ++s) {
+      sigma_invs.push_back(vector<MatrixXt<Type> >());
+      lsigma_dets.push_back(vector<Type>());
+      for (int l = 0; l < L; ++l) {
+        // TODO: better way to calculate invervse
+        Type det = log(e_sigmas[s][l].determinant());
+        MatrixXt<Type> inv = e_sigmas[s][l].inverse().eval();
+
+        lsigma_dets[s].push_back(det);
+        sigma_invs[s].push_back(inv);
+      }
+    }
+    // }
+
+    auto lprobs = ArrayXt<Type>(1, L).setZero();
+
+    for (int t = 0; t < T; ++t) {
+      VectorXt<Type> ob = e_obs.row(t).matrix();
+      for (int s = 0; s < S; ++s) {
+        lprobs = _log_probabilities_mm_fast<Type>(L, ob, e_cs[s], e_mus[s],
+            sigma_invs[s], lsigma_dets[s]);
+        e_lliks(t, s) = lprobs.sum();
       }
     }
   }
