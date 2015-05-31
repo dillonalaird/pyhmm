@@ -1,8 +1,6 @@
 from distutils.core import setup, Extension
-from Cython.Build import cythonize
 from Cython.Distutils import build_ext
 import numpy as np
-import sys, os
 
 
 forward_backward_src = ['internals/forward_backward_msgs_interface.pyx']
@@ -25,4 +23,15 @@ setup(name='gmm',
             language='c++',
             include_dirs=[np.get_include(),],
             extra_compile_args=['-std=c++11'])
+      ])
+
+gaussian_niw_src = ['internals/gaussian_niw_interface.pyx']
+
+setup(name='gaussian_niw',
+      cmdclass={'build_ext': build_ext},
+      ext_modules=[
+          Extension('gaussian_niw', gaussian_niw_src,
+              language='c++',
+              include_dirs=[np.get_include(),],
+              extra_compile_args=['-std=c++11'])
       ])
