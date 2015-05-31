@@ -10,13 +10,13 @@ namespace nptypes {
   using namespace Eigen;
 
   template <typename T>
-  using NPMatrix = Map<Matrix<T, Dynamic, Dynamic, RowMajor>, Aligned>;
+  using NPMatrix = Map<Matrix<T, Dynamic, Dynamic, RowMajor> >;
 
   template <typename T>
-  using NPArray = Map<Array<T, Dynamic, Dynamic, RowMajor>, Aligned>;
+  using NPArray = Map<Array<T, Dynamic, Dynamic, RowMajor> >;
 
   template <typename T>
-  using NPVector = Map<Matrix<T, Dynamic, 1>, Aligned>;
+  using NPVector = Map<Matrix<T, Dynamic, 1> >;
 }
 
 

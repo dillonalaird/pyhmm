@@ -21,6 +21,13 @@ def backward_msgs(np.ndarray[np.double_t, ndim=2, mode='c'] A not None,
             &A[0,0], &lliks[0,0], &lbeta[0,0])
     return lbeta
 
+def log_weights(np.ndarray[np.double_t, ndim=2, mode='c'] lalpha not None,
+                np.ndarray[np.double_t, ndim=2, mode='c'] lbeta not None):
+    cdef np.ndarray[np.double_t, ndim=2, mode='c'] lweights = np.zeros_like(lalpha)
+    fb_msgs.log_weights[np.double_t](lalpha.shape[1], lalpha.shape[0], &lalpha[0,0],
+            &lbeta[0,0], &lweights[0,0])
+    return lweights
+
 def expected_statistics(np.ndarray[np.double_t, ndim=1, mode='c'] pi not None,
                         np.ndarray[np.double_t, ndim=2, mode='c'] A not None,
                         np.ndarray[np.double_t, ndim=2, mode='c'] lliks not None,
