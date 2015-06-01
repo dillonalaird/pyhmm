@@ -1,5 +1,5 @@
 from __future__ import division
-import os, sys, inspect
+import os, sys
 
 # this is so we can import from pyhmm
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
