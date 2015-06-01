@@ -1,6 +1,7 @@
 #ifndef GAUSSIAN_NIW_H
 #define GAUSSIAN_NIW_H
 
+#include <iostream>
 #include <Eigen/Core>
 #include "np_types.h"
 #include "eigen_types.h"
@@ -9,6 +10,7 @@
 namespace gaussian_niw {
     using namespace std;
     using namespace Eigen;
+    using namespace nptypes;
     using namespace eigentypes;
 
 
@@ -31,7 +33,21 @@ namespace gaussian_niw {
      * s3 - \sum_{i=1}^N w_i
      */
     template  <typename Type>
-    void meanfield_update(int D, Type* nat_params, Type* s1, Type* s2, Type s3) { }
+    void meanfield_update(int D, Type* nat_params, Type* s1, Type* s2, Type s3) {
+        NPMatrix<Type> n3 = NPMatrix<Type>(nat_params, D, D);
+        NPVector<Type> n1 = NPVector<Type>(&nat_params[D*D], D, 1);
+        Type* n2 = &nat_params[D*(D+1)];
+        Type* n4 = &nat_params[D*(D+2)];
+        
+        cout << "n1 = " << endl;
+        cout << n1 << endl;
+        cout << "n2 = " << endl;
+        cout << *n2 << endl;
+        cout << "n3 = " << endl;
+        cout << n3 << endl;
+        cout << "n4 = " << endl;
+        cout << *n4 << endl;
+    }
 }
 
 #endif
