@@ -18,4 +18,4 @@ def meanfield_update(np.ndarray[np.double_t, ndim=1, mode='c'] n1 not None,
     nat_params[D+2,0] = n4
     gaussian_niw.meanfield_update[np.double_t](D, &nat_params[0,0],
             &s1[0,0], &s2[0], s3)
-    return nat_params[:D,:D], nat_params[:D,-2], nat_params[-2,-2], nat_params[-1,-1]
+    return nat_params[D,:], nat_params[D+1,0], nat_params[:D,:D], nat_params[D+2,0]

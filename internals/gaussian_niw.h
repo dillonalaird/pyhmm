@@ -21,10 +21,10 @@ namespace gaussian_niw {
      * Wishart distribution with parameters mu_0, sigma_0, kappa_0 and nu_0.
      * These are updated inplace.
      *
-     * u1 - kappa_0*mu_0
-     * u2 - kappa_0
-     * u3 - sigma_0 + kappa_0*mu_0*mu_0^T
-     * u4 - nu_0 + 2 + p
+     * n1 - kappa_0*mu_0
+     * n2 - kappa_0
+     * n3 - sigma_0 + kappa_0*mu_0*mu_0^T
+     * n4 - nu_0 + 2 + p
      *
      * Weighted Sufficient Statistics.
      *
@@ -36,17 +36,33 @@ namespace gaussian_niw {
     void meanfield_update(int D, Type* nat_params, Type* s1, Type* s2, Type s3) {
         NPMatrix<Type> n3 = NPMatrix<Type>(nat_params, D, D);
         NPVector<Type> n1 = NPVector<Type>(&nat_params[D*D], D, 1);
-        Type* n2 = &nat_params[D*(D+1)];
-        Type* n4 = &nat_params[D*(D+2)];
+        Type& n2 = nat_params[D*(D+1)];
+        Type& n4 = nat_params[D*(D+2)];
         
         cout << "n1 = " << endl;
         cout << n1 << endl;
         cout << "n2 = " << endl;
-        cout << *n2 << endl;
+        cout << n2 << endl;
         cout << "n3 = " << endl;
         cout << n3 << endl;
         cout << "n4 = " << endl;
-        cout << *n4 << endl;
+        cout << n4 << endl;
+
+        n3 *= 10;
+        n1 *= 10;
+        n2 *= 10;
+        n4 *= 10;
+        
+        cout << endl;
+        cout << "n1 = " << endl;
+        cout << n1 << endl;
+        cout << "n2 = " << endl;
+        cout << n2 << endl;
+        cout << "n3 = " << endl;
+        cout << n3 << endl;
+        cout << "n4 = " << endl;
+        cout << n4 << endl;
+
     }
 }
 
