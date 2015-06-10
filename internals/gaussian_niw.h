@@ -33,36 +33,19 @@ namespace gaussian_niw {
      * s3 - \sum_{i=1}^N w_i
      */
     template  <typename Type>
-    void meanfield_update(int D, Type* nat_params, Type* s1, Type* s2, Type s3) {
+    void meanfield_update(int D, Type* nat_params, Type* s1_, Type* s2_, Type s3) {
         NPMatrix<Type> n3 = NPMatrix<Type>(nat_params, D, D);
         NPVector<Type> n1 = NPVector<Type>(&nat_params[D*D], D, 1);
         Type& n2 = nat_params[D*(D+1)];
         Type& n4 = nat_params[D*(D+2)];
-        
-        cout << "n1 = " << endl;
-        cout << n1 << endl;
-        cout << "n2 = " << endl;
-        cout << n2 << endl;
-        cout << "n3 = " << endl;
-        cout << n3 << endl;
-        cout << "n4 = " << endl;
-        cout << n4 << endl;
 
-        n3 *= 10;
-        n1 *= 10;
-        n2 *= 10;
-        n4 *= 10;
+        NPMatrix<Type> s1 = NPMatrix<Type>(s1_, D, D);
+        NPVector<Type> s2 = NPVector<Type>(s2_, D, 1);
         
-        cout << endl;
-        cout << "n1 = " << endl;
-        cout << n1 << endl;
-        cout << "n2 = " << endl;
-        cout << n2 << endl;
-        cout << "n3 = " << endl;
-        cout << n3 << endl;
-        cout << "n4 = " << endl;
-        cout << n4 << endl;
-
+        n1 += s2;
+        n2 += s3;
+        n3 += s1;
+        n4 += s3;
     }
 }
 

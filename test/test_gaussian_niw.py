@@ -14,8 +14,8 @@ def test_constructors():
     n2 = np.double(4)
     n3 = np.array([[5,6,7],[8,9,10],[11,12,13]]).astype(np.double)
     n4 = np.double(14)
-    s1 = np.array([[1]]).astype(np.double)
-    s2 = np.array([1]).astype(np.double)
+    s1 = np.array([[1,1,1],[1,1,1],[1,1,1]]).astype(np.double)
+    s2 = np.array([1,1,1]).astype(np.double)
     s3 = np.double(1)
 
     gniw.meanfield_update(n1, n2, n3, n4, s1, s2, s3)
@@ -26,15 +26,15 @@ def test_constructors():
     print 'after n4 = ', n4
 
 
-def test_modify():
+def test_update():
     D = 3
 
     n1 = np.array([1,2,3]).astype(np.double)
     n2 = np.double(4)
     n3 = np.array([[5,6,7],[8,9,10],[11,12,13]]).astype(np.double)
     n4 = np.double(14)
-    s1 = np.array([[1]]).astype(np.double)
-    s2 = np.array([1]).astype(np.double)
+    s1 = np.array([[1,1,1],[1,1,1],[1,1,1]]).astype(np.double)
+    s2 = np.array([1,1,1]).astype(np.double)
     s3 = np.double(1)
 
     n1, n2, n3, n4 = gniw.meanfield_update(n1, n2, n3, n4, s1, s2, s3)
@@ -46,4 +46,4 @@ def test_modify():
 
 if __name__ == '__main__':
     #test_constructors()
-    test_modify()
+    test_update()
