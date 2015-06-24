@@ -1,6 +1,7 @@
 from __future__ import division
 import os, sys
 from scipy.stats import multivariate_normal as mnorm
+from scipy.special import digamma
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 
@@ -27,6 +28,20 @@ def _sample_invwishart(S, nu):
     R = np.linalg.qr(x, 'r')
     T = scipy.linalg.solve_triangular(R.T, chol.T, lower=True).T
     return np.dot(T, T.T)
+
+def _responsibilities(mu_0, sigma_0, kappa_0, nu_0, xs):
+    D = mu_0.shape[0]
+    x_bar = xs - mu_0
+    log_lambda_tilde = _log_lambda_tilde(sigma_0, nu_0)
+    xs = np.array([x_bar[i,:].T.dot(sigma_0).dot(x_bar[i,:])
+                   for i in xrange(x_bar.shape[0])])
+    return 0.5*(log_lambda_tilde - D*(1/kappa_0) - nu_0*xs - D*np.log(2*np.pi))
+
+def _log_lambda_tilde(sigma_0, nu_0):
+    D = sigma_0.shape[0]
+    ln_sigma_0_det = np.log(np.linalg.det(sigma_0))
+    return np.sum([digamma((nu_0 + 1 - i)/2) for i in xrange(D)]) - D*np.log(2) + \
+        ln_sigma_0_det
 
 
 def test_constructors():
@@ -82,16 +97,53 @@ def test_update2():
     obs = np.array([mnorm.rvs(params[np.round(i/N)], np.eye(2))
         for i in xrange(1,N+1)])
 
+    rs1 = _responsibilities(mus_0[0], sigmas_0[0], kappa_0, nu_0, obs)
+    rs2 = _responsibilities(mus_0[1], sigmas_0[1], kappa_0, nu_0, obs)
+    rs = np.vstack((rs1, rs2)).T
 
-    lliks = np.array([[mnorm.logpdf(ob, params[0], np.eye(2)),
-                       mnorm.logpdf(ob, params[1], np.eye(2))] for ob in obs])
-    s1s = np.array([np.sum([np.outer(obs[i],obs[i])*lliks[i,0] 
-                    for i in xrange(obs.shape[0])],axis=1),
-                    np.sum([np.outer(obs[i],obs[i])*lliks[i,1] 
-                    for i in xrange(obs.shape[0])],axis=1)])
-    s2s = np.array([np.sum(obs*lliks[:,i,np.newaxis], axis=0) for i in xrange(2)])
-    s3s = np.sum(lliks, axis=0)
-    
+    s1s = np.array([np.sum([np.outer(obs[i],obs[i])*rs[i,0]
+                    for i in xrange(obs.shape[0])],axis=0),
+                    np.sum([np.outer(obs[i],obs[i])*rs[i,1]
+                    for i in xrange(obs.shape[0])],axis=0)])
+    s2s = np.array([np.sum(obs*rs[:,i,np.newaxis], axis=0) for i in xrange(2)])
+    s3s = np.sum(rs, axis=0)
+
+    n1s = np.array([kappa_0*mus_0[0], kappa_0*mus_0[1]])
+    n2s = np.array([kappa_0, kappa_0])
+    n3s = np.array([sigmas_0[0] + kappa_0*np.outer(mus_0[0], mus_0[0]),
+                    sigmas_0[1] + kappa_0*np.outer(mus_0[1], mus_0[1])])
+    n4s = np.array([nu_0 + 2 + 2, nu_0 + 2 + 2])
+
+    print 'label 1 before'
+    print 'n1 = ', n1s[0]
+    print 'n2 = ', n2s[0]
+    print 'n3 = ', n3s[0]
+    print 'n4 = ', n4s[0]
+
+    n1, n2, n3, n4 = gniw.meanfield_update(n1s[0], n2s[0], n3s[0], n4s[0],
+                                           s1s[0], s2s[0], s3s[0])
+
+    print 'label 1 after'
+    print 'n1 = ', n1
+    print 'n2 = ', n2
+    print 'n3 = ', n3
+    print 'n4 = ', n4
+
+    print 'label 2 before'
+    print 'n1 = ', n1s[1]
+    print 'n2 = ', n2s[1]
+    print 'n3 = ', n3s[1]
+    print 'n4 = ', n4s[1]
+
+    n1, n2, n3, n4 = gniw.meanfield_update(n1s[1], n2s[1], n3s[1], n4s[1],
+                                           s1s[1], s2s[1], s3s[1])
+
+    print 'label 2 after'
+    print 'n1 = ', n1
+    print 'n2 = ', n2
+    print 'n3 = ', n3
+    print 'n4 = ', n4
+
 if __name__ == '__main__':
     #test_constructors()
     test_update2()
