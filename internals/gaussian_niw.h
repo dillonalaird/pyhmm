@@ -28,24 +28,25 @@ namespace gaussian_niw {
      *
      * Weighted Sufficient Statistics.
      *
-     * s1 - \sum_{i=1}^N w_i(x_i*x_i^T)
+     * s1 - \sum_{i=1}^N w_i
      * s2 - \sum_{i=1}^N w_i*x_i
-     * s3 - \sum_{i=1}^N w_i
+     * s3 - \sum_{i=1}^N w_i(x_i*x_i^T)
      */
     template  <typename Type>
-    void meanfield_update(int D, Type* nat_params, Type* s1_, Type* s2_, Type s3) {
+    void meanfield_update(int D, Type* nat_params, Type s1_, Type* s2_, Type* s3_) {
         NPMatrix<Type> n3 = NPMatrix<Type>(nat_params, D, D);
         NPVector<Type> n1 = NPVector<Type>(&nat_params[D*D], D, 1);
         Type& n2 = nat_params[D*(D+1)];
         Type& n4 = nat_params[D*(D+2)];
 
-        NPMatrix<Type> s1 = NPMatrix<Type>(s1_, D, D);
-        NPVector<Type> s2 = NPVector<Type>(s2_, D, 1);
+        Type& s1 = s1_;
+        NPMatrix<Type> s2 = NPMatrix<Type>(s2_, D, 1);
+        NPVector<Type> s3 = NPVector<Type>(s3_, D, D);
         
         n1 += s2;
-        n2 += s3;
-        n3 += s1;
-        n4 += s3;
+        n2 += s1;
+        n3 += s3;
+        n4 += s1;
     }
 }
 
