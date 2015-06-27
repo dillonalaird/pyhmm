@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.par
 import numpy as np
 import scipy.linalg
 import scipy.stats as stats
-import gaussian_niw as gniw
+import gaussian_wishart as gw
 
 def _sample_niw(mu, lmbda, kappa, nu):
     lmbda = _sample_invwishart(lmbda, nu)
@@ -72,7 +72,7 @@ def test_constructors():
     s2 = np.array([1,1,1]).astype(np.double)
     s3 = np.double(1)
 
-    gniw.meanfield_update(n1, n2, n3, n4, s1, s2, s3)
+    gw.meanfield_update(n1, n2, n3, n4, s1, s2, s3)
 
     print 'after n1 = ', n1
     print 'after n2 = ', n2
@@ -91,7 +91,7 @@ def test_update1():
     s2 = np.array([1,1,1]).astype(np.double)
     s3 = np.double(1)
 
-    n1, n2, n3, n4 = gniw.meanfield_update(n1, n2, n3, n4, s1, s2, s3)
+    n1, n2, n3, n4 = gw.meanfield_update(n1, n2, n3, n4, s1, s2, s3)
 
     print 'after n1 = ', n1
     print 'after n2 = ', n2
@@ -157,7 +157,7 @@ def test_update2():
     print 'kappa_0 = ', kappa_0
     print 'nu_0 = ', nu_0
 
-    n1, n2, n3, n4 = gniw.meanfield_update(n1s[0], n2s[0], n3s[0], n4s[0],
+    n1, n2, n3, n4 = gw.meanfield_update(n1s[0], n2s[0], n3s[0], n4s[0],
                                            s1s[0], s2s[0], s3s[0])
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n1, n2, n3, n4)
@@ -175,7 +175,7 @@ def test_update2():
     print 'kappa_0 = ', kappa_0
     print 'nu_0 = ', nu_0
 
-    n1, n2, n3, n4 = gniw.meanfield_update(n1s[1], n2s[1], n3s[1], n4s[1],
+    n1, n2, n3, n4 = gw.meanfield_update(n1s[1], n2s[1], n3s[1], n4s[1],
                                            s1s[1], s2s[1], s3s[1])
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n1, n2, n3, n4)
