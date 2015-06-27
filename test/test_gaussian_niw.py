@@ -2,6 +2,7 @@ from __future__ import division
 import os, sys
 from scipy.stats import multivariate_normal as mnorm
 from scipy.special import digamma
+from matplotlib import pyplot as plt
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 
@@ -42,6 +43,22 @@ def _log_lambda_tilde(sigma_0, nu_0):
     ln_sigma_0_det = np.log(np.linalg.det(sigma_0))
     return np.sum([digamma((nu_0 + 1 - i)/2) for i in xrange(D)]) - D*np.log(2) + \
         ln_sigma_0_det
+
+
+def standard_to_natural(mu_0, sigma_0, kappa_0, nu_0):
+    n1 = kappa_0*mu_0
+    n2 = kappa_0
+    n3 = sigma_0 + kappa_0*np.outer(mu_0, mu_0)
+    n4 = nu_0 + 2 + mu_0.shape[0]
+    return n1, n2, n3, n4
+
+
+def natural_to_standard(n1, n2, n3, n4):
+    kappa_0 = n2
+    mu_0 = n1/n2
+    sigma_0 = n3 - kappa_0*np.outer(mu_0, mu_0)
+    nu_0 = n4 - 2 - mu_0.shape[0]
+    return mu_0, sigma_0, kappa_0, nu_0
 
 
 def test_constructors():
@@ -97,16 +114,36 @@ def test_update2():
     obs = np.array([mnorm.rvs(params[np.round(i/N)], np.eye(2))
         for i in xrange(1,N+1)])
 
+    plt.scatter(obs[:,0], obs[:,1])
+    plt.show()
+
     rs1 = _responsibilities(mus_0[0], sigmas_0[0], kappa_0, nu_0, obs)
     rs2 = _responsibilities(mus_0[1], sigmas_0[1], kappa_0, nu_0, obs)
     rs = np.vstack((rs1, rs2)).T
+    rs = np.exp(rs)
+    rs = np.array([row/row.sum() for row in rs])
 
-    s1s = np.array([np.sum([np.outer(obs[i],obs[i])*rs[i,0]
-                    for i in xrange(obs.shape[0])],axis=0),
-                    np.sum([np.outer(obs[i],obs[i])*rs[i,1]
-                    for i in xrange(obs.shape[0])],axis=0)])
+    s1s = np.sum(rs, axis=0)
+    s2s = np.array([np.sum(obs*rs[:,i,np.newaxis], axis=0) for i in xrange(2)])/s1s
+    s3s = np.array([np.sum([np.outer(obs[i]-s2s[0],obs[i]-s2s[0])*rs[i,0]
+                            for i in xrange(obs.shape[0])],axis=0),
+                    np.sum([np.outer(obs[i]-s2s[1],obs[i]-s2s[1])*rs[i,1]
+                            for i in xrange(obs.shape[0])],axis=0)])/s1s
+
+    print 's1s = ', s1s
+    print 's2s = ', s2s
+    print 's2s = ', s3s
+
+    s1s = np.sum(rs, axis=0)
     s2s = np.array([np.sum(obs*rs[:,i,np.newaxis], axis=0) for i in xrange(2)])
-    s3s = np.sum(rs, axis=0)
+    s3s = np.array([np.sum([np.outer(obs[i],obs[i])*rs[i,0]
+                            for i in xrange(obs.shape[0])],axis=0),
+                    np.sum([np.outer(obs[i],obs[i])*rs[i,1]
+                            for i in xrange(obs.shape[0])],axis=0)])
+
+    print 's1s = ', s1s
+    print 's2s = ', s2s
+    print 's2s = ', s3s
 
     n1s = np.array([kappa_0*mus_0[0], kappa_0*mus_0[1]])
     n2s = np.array([kappa_0, kappa_0])
@@ -115,34 +152,39 @@ def test_update2():
     n4s = np.array([nu_0 + 2 + 2, nu_0 + 2 + 2])
 
     print 'label 1 before'
-    print 'n1 = ', n1s[0]
-    print 'n2 = ', n2s[0]
-    print 'n3 = ', n3s[0]
-    print 'n4 = ', n4s[0]
+    print 'mu_0 = ', mus_0[0]
+    print 'sigma_0 = ', sigmas_0[0]
+    print 'kappa_0 = ', kappa_0
+    print 'nu_0 = ', nu_0
 
     n1, n2, n3, n4 = gniw.meanfield_update(n1s[0], n2s[0], n3s[0], n4s[0],
                                            s1s[0], s2s[0], s3s[0])
 
+    mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n1, n2, n3, n4)
+
     print 'label 1 after'
-    print 'n1 = ', n1
-    print 'n2 = ', n2
-    print 'n3 = ', n3
-    print 'n4 = ', n4
+    print 'mu_0 = ', mu_0
+    print 'sigma_0 = ', sigma_0
+    print 'kappa_0 = ', kappa_0
+    print 'nu_0 = ', nu_0
+
 
     print 'label 2 before'
-    print 'n1 = ', n1s[1]
-    print 'n2 = ', n2s[1]
-    print 'n3 = ', n3s[1]
-    print 'n4 = ', n4s[1]
+    print 'mu_0 = ', mus_0[1]
+    print 'sigma_0 = ', sigmas_0[1]
+    print 'kappa_0 = ', kappa_0
+    print 'nu_0 = ', nu_0
 
     n1, n2, n3, n4 = gniw.meanfield_update(n1s[1], n2s[1], n3s[1], n4s[1],
                                            s1s[1], s2s[1], s3s[1])
 
+    mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n1, n2, n3, n4)
+
     print 'label 2 after'
-    print 'n1 = ', n1
-    print 'n2 = ', n2
-    print 'n3 = ', n3
-    print 'n4 = ', n4
+    print 'mu_0 = ', mu_0
+    print 'sigma_0 = ', sigma_0
+    print 'kappa_0 = ', kappa_0
+    print 'nu_0 = ', nu_0
 
 if __name__ == '__main__':
     #test_constructors()
