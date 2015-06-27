@@ -19,3 +19,14 @@ def meanfield_update(np.ndarray[np.double_t, ndim=1, mode='c'] n1 not None,
     gaussian_niw.meanfield_update[np.double_t](D, &nat_params[0,0],
                                                s1, &s2[0], &s3[0,0])
     return nat_params[D,:], nat_params[D+1,0], nat_params[:D,:D], nat_params[D+2,0]
+
+def responsibilities(np.ndarray[np.double_t, ndim=2, mode='c'] obs not None,
+                     np.ndarray[np.double_t, ndim=1, mode='c'] mu_0 not None,
+                     np.ndarray[np.double_t, ndim=2, mode='c'] sigma_0 not None,
+                     np.double_t kappa_0,
+                     np.double_t nu_0):
+    cdef np.ndarray[np.double_t, ndim=2, mode='c'] rs = np.zeros_like(obs)
+    gaussian_niw.responsibilities(&obs[0,0], &mu_0[0], &sigma_0[0,0], kappa_0,
+                                  nu_0, &rs[0,0])
+    return rs
+

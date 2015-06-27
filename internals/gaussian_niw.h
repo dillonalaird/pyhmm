@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <Eigen/Core>
+#include <boost/math/special_functions/digamma.hpp>
 #include "np_types.h"
 #include "eigen_types.h"
 
@@ -12,6 +13,10 @@ namespace gaussian_niw {
     using namespace Eigen;
     using namespace nptypes;
     using namespace eigentypes;
+
+    template <typename Type>
+    void responsibilities(Type* obs, Type* mu_0, Type* sigma_0, Type kappa_0, 
+                          Type nu_0, Type* rs) {}
 
 
     /*
