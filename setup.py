@@ -25,12 +25,12 @@ setup(name='gmm',
             extra_compile_args=['-std=c++11'])
       ])
 
-gaussian_niw_src = ['internals/gaussian_niw_interface.pyx']
+gaussian_niw_src = ['internals/gaussian_wishart_interface.pyx']
 
-setup(name='gaussian_niw',
+setup(name='gaussian_wishart',
       cmdclass={'build_ext': build_ext},
       ext_modules=[
-          Extension('gaussian_niw', gaussian_niw_src,
+          Extension('gaussian_wishart', gaussian_niw_src,
               language='c++',
               include_dirs=[np.get_include(),],
               extra_compile_args=['-std=c++11'])
