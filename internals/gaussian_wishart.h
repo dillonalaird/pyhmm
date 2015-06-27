@@ -1,5 +1,5 @@
-#ifndef GAUSSIAN_NIW_H
-#define GAUSSIAN_NIW_H
+#ifndef GAUSSIAN_WISHART_H
+#define GAUSSIAN_WISHART_H
 
 #include <iostream>
 #include <Eigen/Core>
@@ -8,7 +8,7 @@
 #include "eigen_types.h"
 
 
-namespace gaussian_niw {
+namespace gaussian_wishart {
     using namespace std;
     using namespace Eigen;
     using namespace nptypes;
