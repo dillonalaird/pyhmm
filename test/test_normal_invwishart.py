@@ -1,20 +1,32 @@
 from __future__ import division
-import os, sys
+from numpy.core.umath_tests import inner1d
 from scipy.stats import multivariate_normal as mnorm
 from scipy.special import digamma
 from matplotlib import pyplot as plt
 
+import os, sys
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 
 import numpy as np
 import scipy.linalg
 import scipy.stats as stats
-import gaussian_wishart as gw
+import normal_invwishart as niw
 
 def _sample_niw(mu, lmbda, kappa, nu):
     lmbda = _sample_invwishart(lmbda, nu)
     mu = np.random.multivariate_normal(mu, lmbda/kappa)
     return mu, lmbda
+
+
+def _sample_nw(mu_0, sigma_0, kappa_0, nu_0):
+    lmbda = _sample_wishart(sigma_0, nu_0)
+    mu = np.random.multivariate_normal(mu_0, np.linalg.inv(lmbda*kappa_0))
+    return mu, lmbda
+
+
+def _sample_wishart(sigma_0, nu_0):
+    # if A ~ W(sigma_0, nu_0) then X = A^-1 X ~ W^-1(simga_0^-1, nu_0)
+    return _sample_invwishart(np.linalg.inv(sigma_0), nu_0)
 
 
 def _sample_invwishart(S, nu):
@@ -31,7 +43,9 @@ def _sample_invwishart(S, nu):
     return np.dot(T, T.T)
 
 def _responsibilities(mu_0, sigma_0, kappa_0, nu_0, xs):
+    # this is responsibilities for niw so we invert sigma_0
     D = mu_0.shape[0]
+    sigma_0 = np.linalg.inv(sigma_0)
     x_bar = xs - mu_0
     log_lambda_tilde = _log_lambda_tilde(sigma_0, nu_0)
     xs = np.array([x_bar[i,:].T.dot(sigma_0).dot(x_bar[i,:])
@@ -41,8 +55,24 @@ def _responsibilities(mu_0, sigma_0, kappa_0, nu_0, xs):
 def _log_lambda_tilde(sigma_0, nu_0):
     D = sigma_0.shape[0]
     ln_sigma_0_det = np.log(np.linalg.det(sigma_0))
-    return np.sum([digamma((nu_0 + 1 - i)/2) for i in xrange(D)]) - D*np.log(2) + \
+    return np.sum([digamma((nu_0 + 1 - i)/2) for i in xrange(D)]) + D*np.log(2) + \
         ln_sigma_0_det
+
+
+def _responsibilities2(mu_0, sigma_0, kappa_0, nu_0, xs):
+    D = mu_0.shape[0]
+    chol = np.linalg.cholesky(sigma_0)
+    xs = np.reshape(xs,(-1,D))
+    xs = np.linalg.solve(chol, xs.T)
+    return 0.5*(_log_lambda_tilde2(sigma_0, nu_0) - D*(1/kappa_0) - nu_0*\
+                inner1d(xs.T,xs.T) - D*np.log(2*np.pi))
+
+
+def _log_lambda_tilde2(sigma_0, nu_0):
+    D = sigma_0.shape[0]
+    chol = np.linalg.cholesky(sigma_0)
+    return digamma((nu_0 - np.arange(D))/2.).sum() \
+        + D*np.log(2) + np.log(chol.diagonal()).sum()
 
 
 def standard_to_natural(mu_0, sigma_0, kappa_0, nu_0):
@@ -72,7 +102,7 @@ def test_constructors():
     s2 = np.array([1,1,1]).astype(np.double)
     s3 = np.double(1)
 
-    gw.meanfield_update(n1, n2, n3, n4, s1, s2, s3)
+    niw.meanfield_update(n1, n2, n3, n4, s1, s2, s3)
 
     print 'after n1 = ', n1
     print 'after n2 = ', n2
@@ -91,7 +121,7 @@ def test_update1():
     s2 = np.array([1,1,1]).astype(np.double)
     s3 = np.double(1)
 
-    n1, n2, n3, n4 = gw.meanfield_update(n1, n2, n3, n4, s1, s2, s3)
+    n1, n2, n3, n4 = niw.meanfield_update(n1, n2, n3, n4, s1, s2, s3)
 
     print 'after n1 = ', n1
     print 'after n2 = ', n2
@@ -101,18 +131,24 @@ def test_update1():
 
 def test_update2():
     N = 100
-    mus_0 = np.array([[0,0], [10,10]])
+    mus_0 = np.array([[0,0], [20,20]])
     sigmas_0 = np.array([np.eye(2), np.eye(2)])
-    kappa_0 = 0.05
+    kappa_0 = 0.5
     nu_0 = 5
 
     mu_1, sigma_1 = _sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
     mu_2, sigma_2 = _sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
-    #params = np.array([[mu_1, sigma_1], [mu_2, sigma_2]])
-    params = np.array([mu_1, mu_2])
+    params = [[mu_1, sigma_1], [mu_2, sigma_2]]
 
-    obs = np.array([mnorm.rvs(params[np.round(i/N)], np.eye(2))
-        for i in xrange(1,N+1)])
+    print 'sampled params'
+    print '\tmu_1 = ', mu_1
+    print '\tsigma_1 = ', (1/kappa_0)*sigma_1
+    print '\tmu_2 = ', mu_2
+    print '\tsigma_2 = ', (1/kappa_0)*sigma_2
+
+    obs = np.array([mnorm.rvs(params[int(np.round(i/N))][0],
+                              (1/kappa_0)*params[int(np.round(i/N))][1])
+                    for i in xrange(1,N+1)])
 
     plt.scatter(obs[:,0], obs[:,1])
     plt.show()
@@ -124,26 +160,11 @@ def test_update2():
     rs = np.array([row/row.sum() for row in rs])
 
     s1s = np.sum(rs, axis=0)
-    s2s = np.array([np.sum(obs*rs[:,i,np.newaxis], axis=0) for i in xrange(2)])/s1s
-    s3s = np.array([np.sum([np.outer(obs[i]-s2s[0],obs[i]-s2s[0])*rs[i,0]
-                            for i in xrange(obs.shape[0])],axis=0),
-                    np.sum([np.outer(obs[i]-s2s[1],obs[i]-s2s[1])*rs[i,1]
-                            for i in xrange(obs.shape[0])],axis=0)])/s1s
-
-    print 's1s = ', s1s
-    print 's2s = ', s2s
-    print 's2s = ', s3s
-
-    s1s = np.sum(rs, axis=0)
     s2s = np.array([np.sum(obs*rs[:,i,np.newaxis], axis=0) for i in xrange(2)])
     s3s = np.array([np.sum([np.outer(obs[i],obs[i])*rs[i,0]
                             for i in xrange(obs.shape[0])],axis=0),
                     np.sum([np.outer(obs[i],obs[i])*rs[i,1]
                             for i in xrange(obs.shape[0])],axis=0)])
-
-    print 's1s = ', s1s
-    print 's2s = ', s2s
-    print 's2s = ', s3s
 
     n1s = np.array([kappa_0*mus_0[0], kappa_0*mus_0[1]])
     n2s = np.array([kappa_0, kappa_0])
@@ -152,39 +173,48 @@ def test_update2():
     n4s = np.array([nu_0 + 2 + 2, nu_0 + 2 + 2])
 
     print 'label 1 before'
-    print 'mu_0 = ', mus_0[0]
-    print 'sigma_0 = ', sigmas_0[0]
-    print 'kappa_0 = ', kappa_0
-    print 'nu_0 = ', nu_0
+    print '\tmu_0 = ', mus_0[0]
+    print '\tsigma_0 = ', sigmas_0[0]
+    print '\tkappa_0 = ', kappa_0
+    print '\tnu_0 = ', nu_0
 
-    n1, n2, n3, n4 = gw.meanfield_update(n1s[0], n2s[0], n3s[0], n4s[0],
+    n1, n2, n3, n4 = niw.meanfield_update(n1s[0], n2s[0], n3s[0], n4s[0],
                                            s1s[0], s2s[0], s3s[0])
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n1, n2, n3, n4)
 
-    print 'label 1 after'
-    print 'mu_0 = ', mu_0
-    print 'sigma_0 = ', sigma_0
-    print 'kappa_0 = ', kappa_0
-    print 'nu_0 = ', nu_0
+    mu_1, sigma_1 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
 
+    print 'label 1 after'
+    print '\tmu_0 = ', mu_0
+    print '\tsigma_0 = ', sigma_0
+    print '\tkappa_0 = ', kappa_0
+    print '\tnu_0 = ', nu_0
 
     print 'label 2 before'
-    print 'mu_0 = ', mus_0[1]
-    print 'sigma_0 = ', sigmas_0[1]
-    print 'kappa_0 = ', kappa_0
-    print 'nu_0 = ', nu_0
+    print '\tmu_0 = ', mus_0[1]
+    print '\tsigma_0 = ', sigmas_0[1]
+    print '\tkappa_0 = ', kappa_0
+    print '\tnu_0 = ', nu_0
 
-    n1, n2, n3, n4 = gw.meanfield_update(n1s[1], n2s[1], n3s[1], n4s[1],
+    n1, n2, n3, n4 = niw.meanfield_update(n1s[1], n2s[1], n3s[1], n4s[1],
                                            s1s[1], s2s[1], s3s[1])
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n1, n2, n3, n4)
 
     print 'label 2 after'
-    print 'mu_0 = ', mu_0
-    print 'sigma_0 = ', sigma_0
-    print 'kappa_0 = ', kappa_0
-    print 'nu_0 = ', nu_0
+    print '\tmu_0 = ', mu_0
+    print '\tsigma_0 = ', sigma_0
+    print '\tkappa_0 = ', kappa_0
+    print '\tnu_0 = ', nu_0
+
+    mu_2, sigma_2 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
+
+    print 'resampled params'
+    print '\tmu_1 = ', mu_1
+    print '\tsigma_1 = ', (1/kappa_0)*sigma_1
+    print '\tmu_2 = ', mu_2
+    print '\tsigma_2 = ', (1/kappa_0)*sigma_2
 
 if __name__ == '__main__':
     #test_constructors()
