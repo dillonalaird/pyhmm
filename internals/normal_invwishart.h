@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <Eigen/Core>
+#include <Eigen/LU>
 #include <boost/math/special_functions/digamma.hpp>
 #include "np_types.h"
 #include "eigen_types.h"
@@ -10,19 +11,74 @@
 
 namespace niw {
     using namespace std;
+    using namespace boost;
     using namespace Eigen;
     using namespace nptypes;
     using namespace eigentypes;
 
+    static const constexpr double log2   = 0.69314718055994530941723212145817656;
+    static const constexpr double log2pi = 1.83787706640934533908193770912475883;
+
     template <typename Type>
-    void responsibilities(Type* obs, Type* mu_0, Type* sigma_0, Type kappa_0, 
-                          Type nu_0, Type* rs) {}
+    Type _log_lambda_tilde(const MatrixXt<Type>& sigma_0_inv, const Type nu_0) {
+        Type D = sigma_0_inv.rows();
+        Type log_sigma_0_det = log(sigma_0_inv.determinant());
+
+        Type sum = 0.0;
+        for (int i = 0; i < D; ++i) sum += math::digamma((nu_0 + 1 - i)/2);
+
+        return sum + D*log2 + log_sigma_0_det;
+    }
+
+    /*
+     * Calculates the responsibilites for variational normal-inverse-Wishart
+     * distribution.
+     *
+     * N - Number of observations.
+     * D - Dimension of data.
+     * obs - The observations.
+     *
+     * The follow are hyperparameters for a normal-inverse-Wishart distribution.
+     * mu_0_    - The mean hyperparameter.
+     * sigma_0_ - The covariance hyperparameter.
+     * kappa_0_ - psuedo counts for the mean.
+     * nu_0_    - psuedo counts for the covariance.
+     *
+     * rs - This holds the responsibilities.
+     *
+     * Notes: See Bishop chapter 10.2.
+     */
+    template <typename Type>
+    void responsibilities(int N, int D, Type* obs, Type* mu_0_, Type* sigma_0_, 
+                          Type kappa_0_, Type nu_0_, Type* rs) {
+        NPArray<Type> e_obs = NPArray<Type>(obs, N, D);
+        NPArray<Type> e_rs  = NPArray<Type>(rs, N, 1);
+
+        NPVector<Type> mu_0 = NPVector<Type>(mu_0_, D);
+        NPMatrix<Type> sigma_0 = NPMatrix<Type>(sigma_0_, D, D);
+        Type& kappa_0 = kappa_0_;
+        Type& nu_0 = nu_0_;
+
+        MatrixXt<Type> sigma_0_inv = sigma_0.inverse().eval();
+        Type log_lambda_tilde = _log_lambda_tilde(sigma_0_inv, nu_0);
+
+        Type base = 0.5*(log_lambda_tilde - D*(1/kappa_0) - D*log2pi);
+        auto diff = VectorXt<Type>(D);
+        Type descriptive_stat;
+        for (int i = 0; i < N; ++i) {
+            diff = (e_obs.row(i) - mu_0.array()).matrix().eval();
+            descriptive_stat = diff.transpose()*sigma_0_inv*diff;
+            e_rs(i) = base - 0.5*nu_0*descriptive_stat;
+        }
+    }
 
 
     /*
+     * Computes a variational meanfield update in natural parameter form.
+     *
      * D - Dimension of data.
      *
-     * The u's are the hyperparameters for Gaussian using a normal-inverse-
+     * The n's are the hyperparameters for Gaussian using a normal-inverse-
      * Wishart distribution with parameters mu_0, sigma_0, kappa_0 and nu_0.
      * These are updated inplace.
      *

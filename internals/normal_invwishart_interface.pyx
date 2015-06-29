@@ -25,7 +25,8 @@ def responsibilities(np.ndarray[np.double_t, ndim=2, mode='c'] obs not None,
                      np.double_t kappa_0,
                      np.double_t nu_0):
     cdef np.ndarray[np.double_t, ndim=2, mode='c'] rs = np.zeros_like(obs)
-    niw.responsibilities(&obs[0,0], &mu_0[0], &sigma_0[0,0], kappa_0, nu_0,
-                         &rs[0,0])
+    niw.responsibilities[np.double_t](obs.shape[0], obs.shape[1], &obs[0,0],
+                                      &mu_0[0], &sigma_0[0,0], kappa_0, nu_0,
+                                      &rs[0,0])
     return rs
 
