@@ -216,6 +216,42 @@ def test_update2():
     print '\tmu_2 = ', mu_2
     print '\tsigma_2 = ', (1/kappa_0)*sigma_2
 
+
+def test_responsibilities():
+    N = 10
+    mus_0 = np.array([[0.,0.], [20.,20.]])
+    sigmas_0 = np.array([np.eye(2), np.eye(2)])
+    kappa_0 = 0.5
+    nu_0 = 5
+
+    mu_1, sigma_1 = _sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
+    mu_2, sigma_2 = _sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
+    params = [[mu_1, sigma_1], [mu_2, sigma_2]]
+
+    #print 'sampled params'
+    #print '\tmu_1 = ', mu_1
+    #print '\tsigma_1 = ', (1/kappa_0)*sigma_1
+    #print '\tmu_2 = ', mu_2
+    #print '\tsigma_2 = ', (1/kappa_0)*sigma_2
+
+    obs = np.array([mnorm.rvs(params[int(np.round(i/N))][0],
+                              (1/kappa_0)*params[int(np.round(i/N))][1])
+                    for i in xrange(1,N+1)]).astype(np.float64)
+
+    #plt.scatter(obs[:,0], obs[:,1])
+    #plt.show()
+
+    rs1 = niw.responsibilities(obs, mus_0[0], sigmas_0[0], kappa_0, nu_0)
+    rs2 = niw.responsibilities(obs, mus_0[1], sigmas_0[1], kappa_0, nu_0)
+
+    rs1_true = _responsibilities(mus_0[0], sigmas_0[0], kappa_0, nu_0, obs)
+    rs2_true = _responsibilities(mus_0[1], sigmas_0[1], kappa_0, nu_0, obs)
+
+    np.testing.assert_almost_equal(rs1, rs1_true)
+    np.testing.assert_almost_equal(rs2, rs2_true)
+
+
 if __name__ == '__main__':
     #test_constructors()
-    test_update2()
+    #test_update2()
+    test_responsibilities()

@@ -66,7 +66,7 @@ namespace niw {
         auto diff = VectorXt<Type>(D);
         Type descriptive_stat;
         for (int i = 0; i < N; ++i) {
-            diff = (e_obs.row(i) - mu_0.array()).matrix().eval();
+            diff = (e_obs.row(i) - mu_0.transpose().array()).matrix();
             descriptive_stat = diff.transpose()*sigma_0_inv*diff;
             e_rs(i) = base - 0.5*nu_0*descriptive_stat;
         }
