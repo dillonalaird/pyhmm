@@ -30,7 +30,8 @@ namespace niw {
         MatrixXt<Type> sigma_inv = e_sigma.inverse().eval();
         Type log_sigma_det = log(e_sigma.determinant());
 
-        Type base = -0.5*N*(D*log2pi - log_sigma_det);
+        // -0.5*(D*log2pi - log_sigma_det) doesn't seem to work
+        Type base = -0.5*D*log2pi - 0.5*log_sigma_det;
         auto diff = VectorXt<Type>(D);
         Type descriptive_stat;
         for (int i = 0; i < N; ++i) {

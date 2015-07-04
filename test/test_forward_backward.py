@@ -40,11 +40,11 @@ def test_simple_fb():
         for i in xrange(1, N+1)])
 
     # lliks needs to have 2 dimensions
-    lliks = np.array([[norm.logpdf(ob, dist[np.round((i+1)/N),0], 
+    lliks = np.array([[norm.logpdf(ob, dist[np.round((i+1)/N),0],
         dist[np.round((i+1)/N),1])] for i,ob in enumerate(obs)])
 
     lliks = np.array([[norm.logpdf(ob, dist[0,0], dist[0,1]),
-                       norm.logpdf(ob, dist[1,0], dist[1,1])] 
+                       norm.logpdf(ob, dist[1,0], dist[1,1])]
                        for i,ob in enumerate(obs)])
 
 
@@ -71,11 +71,11 @@ def test_expected_states_and_transcount():
         for i in xrange(1, N+1)])
 
     # lliks needs to have 2 dimensions
-    lliks = np.array([[norm.logpdf(ob, dist[np.round((i+1)/N),0], 
+    lliks = np.array([[norm.logpdf(ob, dist[np.round((i+1)/N),0],
         dist[np.round((i+1)/N),1])] for i,ob in enumerate(obs)])
 
     lliks = np.array([[norm.logpdf(ob, dist[0,0], dist[0,1]),
-                       norm.logpdf(ob, dist[1,0], dist[1,1])] 
+                       norm.logpdf(ob, dist[1,0], dist[1,1])]
                        for i,ob in enumerate(obs)])
 
 
@@ -96,9 +96,9 @@ def test_expected_states_and_transcount():
     probs = np.array([[1., 0.], [0., 1.]])
     expected_states_corr = np.array([probs[np.round(i/N)] for i in xrange(1, N+1)])
 
-    np.testing.assert_almost_equal(expected_states, expected_states_corr, 
+    np.testing.assert_almost_equal(expected_states, expected_states_corr,
             decimal=1)
-    np.testing.assert_almost_equal(expected_transcounts, 
+    np.testing.assert_almost_equal(expected_transcounts,
             expected_transcounts_corr, decimal=1)
 
 

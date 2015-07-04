@@ -251,7 +251,32 @@ def test_responsibilities():
     np.testing.assert_almost_equal(rs2, rs2_true)
 
 
+def test_log_likelihood():
+    N = 10
+    mus_0 = np.array([[0.,0.], [20.,20.]])
+    sigmas_0 = np.array([np.eye(2), np.eye(2)])
+    kappa_0 = 0.5
+    nu_0 = 5
+
+    mu_1, sigma_1 = _sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
+    mu_2, sigma_2 = _sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
+    params = [[mu_1, sigma_1], [mu_2, sigma_2]]
+
+    obs = np.array([mnorm.rvs(params[int(np.round(i/N))][0],
+                              params[int(np.round(i/N))][1])
+                    for i in xrange(1,N+1)]).astype(np.float64)
+
+    lliks_true = np.array([[mnorm.logpdf(ob, mu_1, sigma_1),
+                            mnorm.logpdf(ob, mu_2, sigma_2)] for ob in obs])
+    lliks_test1 = niw.log_likelihood(obs, mu_1, sigma_1)
+    lliks_test2 = niw.log_likelihood(obs, mu_2, sigma_2)
+
+    np.testing.assert_almost_equal(lliks_true[:,0], lliks_test1)
+    np.testing.assert_almost_equal(lliks_true[:,1], lliks_test2)
+
+
 if __name__ == '__main__':
     #test_constructors()
     #test_update2()
-    test_responsibilities()
+    #test_responsibilities()
+    test_log_likelihood()
