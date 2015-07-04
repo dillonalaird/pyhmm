@@ -52,8 +52,8 @@ namespace niw {
     }
 
     /*
-     * Calculates the responsibilites for variational normal-inverse-Wishart
-     * distribution.
+     * Calculates the expected log likelihood (or responsibilities) for 
+     * variational normal-inverse-Wishart distribution.
      *
      * N - Number of observations.
      * D - Dimension of data.
@@ -70,8 +70,9 @@ namespace niw {
      * Notes: See Bishop chapter 10.2.
      */
     template <typename Type>
-    void responsibilities(int N, int D, Type* obs, Type* mu_0_, Type* sigma_0_, 
-                          Type kappa_0_, Type nu_0_, Type* rs) {
+    void expected_log_likelihood(int N, int D, Type* obs, Type* mu_0_, 
+                                 Type* sigma_0_, Type kappa_0_, Type nu_0_,
+                                 Type* rs) {
         NPArray<Type> e_obs = NPArray<Type>(obs, N, D);
         NPArray<Type> e_rs  = NPArray<Type>(rs, N, 1);
 

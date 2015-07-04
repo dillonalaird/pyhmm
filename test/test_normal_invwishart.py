@@ -241,8 +241,8 @@ def test_responsibilities():
     #plt.scatter(obs[:,0], obs[:,1])
     #plt.show()
 
-    rs1 = niw.responsibilities(obs, mus_0[0], sigmas_0[0], kappa_0, nu_0)
-    rs2 = niw.responsibilities(obs, mus_0[1], sigmas_0[1], kappa_0, nu_0)
+    rs1 = niw.expected_log_likelihood(obs, mus_0[0], sigmas_0[0], kappa_0, nu_0)
+    rs2 = niw.expected_log_likelihood(obs, mus_0[1], sigmas_0[1], kappa_0, nu_0)
 
     rs1_true = _responsibilities(mus_0[0], sigmas_0[0], kappa_0, nu_0, obs)
     rs2_true = _responsibilities(mus_0[1], sigmas_0[1], kappa_0, nu_0, obs)
