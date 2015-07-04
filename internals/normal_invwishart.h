@@ -20,6 +20,27 @@ namespace niw {
     static const constexpr double log2pi = 1.83787706640934533908193770912475883;
 
     template <typename Type>
+    void log_likelihood(int N, int D, Type* obs, Type* mu, Type* sigma, Type* lliks) {
+        NPArray<Type> e_obs = NPArray<Type>(obs, N, D);
+        NPArray<Type> e_lliks = NPArray<Type>(lliks, N, 1);
+
+        NPVector<Type> e_mu = NPVector<Type>(mu, D);
+        NPMatrix<Type> e_sigma = NPMatrix<Type>(sigma, D, D);
+
+        MatrixXt<Type> sigma_inv = e_sigma.inverse().eval();
+        Type log_sigma_det = log(e_sigma.determinant());
+
+        Type base = -0.5*N*(D*log2pi - log_sigma_det);
+        auto diff = VectorXt<Type>(D);
+        Type descriptive_stat;
+        for (int i = 0; i < N; ++i) {
+            diff = (e_obs.row(i) - e_mu.transpose().array()).matrix();
+            descriptive_stat = diff.transpose()*sigma_inv*diff;
+            e_lliks(i) = base - 0.5*descriptive_stat;
+        }
+    }
+
+    template <typename Type>
     Type _log_lambda_tilde(const MatrixXt<Type>& sigma_0_inv, const Type nu_0) {
         Type D = sigma_0_inv.rows();
         Type log_sigma_0_det = log(sigma_0_inv.determinant());

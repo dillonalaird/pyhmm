@@ -3,6 +3,7 @@ cimport numpy as np
 
 cimport internals.normal_invwishart as niw
 
+
 def meanfield_update(np.ndarray[np.double_t, ndim=1, mode='c'] n1 not None,
                      np.double_t n2,
                      np.ndarray[np.double_t, ndim=2, mode='c'] n3 not None,
@@ -19,6 +20,7 @@ def meanfield_update(np.ndarray[np.double_t, ndim=1, mode='c'] n1 not None,
     niw.meanfield_update[np.double_t](D, &nat_params[0,0], s1, &s2[0], &s3[0,0])
     return nat_params[D,:], nat_params[D+1,0], nat_params[:D,:D], nat_params[D+2,0]
 
+
 def responsibilities(np.ndarray[np.double_t, ndim=2, mode='c'] obs not None,
                      np.ndarray[np.double_t, ndim=1, mode='c'] mu_0 not None,
                      np.ndarray[np.double_t, ndim=2, mode='c'] sigma_0 not None,
@@ -29,3 +31,11 @@ def responsibilities(np.ndarray[np.double_t, ndim=2, mode='c'] obs not None,
                                       &mu_0[0], &sigma_0[0,0], kappa_0, nu_0,
                                       &rs[0])
     return rs
+
+def log_likelihood(np.ndarray[np.double_t, ndim=2, mode='c'] obs not None,
+                   np.ndarray[np.double_t, ndim=1, mode='c'] mu not None,
+                   np.ndarray[np.double_t, ndim=2, mode='c'] sigma not None):
+    cdef np.ndarray[np.double_t, ndim=1, mode='c'] lliks = np.zeros(obs.shape[0])
+    niw.log_likelihood[np.double_t](obs.shape[0], mu.shape[0], &obs[0,0], &mu[0],
+                                    &sigma[0,0], &lliks[0])
+    return lliks
