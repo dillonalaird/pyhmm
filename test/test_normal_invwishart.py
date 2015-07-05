@@ -217,7 +217,7 @@ def test_update2():
     print '\tsigma_2 = ', (1/kappa_0)*sigma_2
 
 
-def test_responsibilities():
+def test_expected_log_likelihood():
     N = 10
     mus_0 = np.array([[0.,0.], [20.,20.]])
     sigmas_0 = np.array([np.eye(2), np.eye(2)])
@@ -278,5 +278,5 @@ def test_log_likelihood():
 if __name__ == '__main__':
     #test_constructors()
     #test_update2()
-    #test_responsibilities()
-    test_log_likelihood()
+    test_expected_log_likelihood()
+    #test_log_likelihood()
