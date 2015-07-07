@@ -48,7 +48,7 @@ def natural_to_standard(n1, n2, n3, n4):
     return mu_0, sigma_0, kappa_0, nu_0
 
 
-def test_basic():
+def test_basic1():
     N = 100
     D = 2
     pi = np.array([0.999, 0.001])
@@ -131,5 +131,113 @@ def test_basic():
     print sigma_2
 
 
+def test_basic2():
+    N = 100
+    D = 2
+    pi = np.array([0.999, 0.001])
+    A = np.array([[0.9, 0.1],
+                  [0.1, 0.9]])
+    mus_0 = np.array([[0.,0.], [20.,20.]])
+    sigmas_0 = np.array([np.eye(2), 2*np.eye(2)])
+    kappa_0 = 0.5
+    nu_0 = 5
+
+    mu_1, sigma_1 = _sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
+    mu_2, sigma_2 = _sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
+
+    params = [[mu_1, sigma_1], [mu_2, sigma_1]]
+
+    obs = [mnorm.rvs(mu_1, sigma_1)]
+    s = 0
+    for i in xrange(N-1):
+        s = np.random.choice(2, 1, p=A[s,:])[0]
+        obs.append(mnorm.rvs(params[s][0], params[s][1]))
+
+    obs = np.array(obs)
+
+    mus_N = np.array([np.mean(obs, axis=0), np.mean(obs, axis=0)])
+    sigmas_N = 0.75*np.array([np.cov(obs.T), np.cov(obs.T)])
+
+    n1s = [kappa_0*mus_N[0],
+           kappa_0,
+           sigmas_N[0] + kappa_0*np.outer(mus_N[0],mus_N[0]),
+           nu_0 + D + 2]
+    n2s = [kappa_0*mus_N[1],
+           kappa_0,
+           sigmas_N[1] + kappa_0*np.outer(mus_N[1],mus_N[1]),
+           nu_0 + D + 2]
+
+    iters = 10
+
+    print 'label 1 true'
+    print mus_0[0]
+    print sigmas_0[0]
+
+    print 'label 2 true'
+    print mus_0[1]
+    print sigmas_0[1]
+
+    for _ in xrange(iters):
+
+        mu_1N, sigma_1N, kappa_1N, nu_1N = natural_to_standard(n1s[0], n1s[1],
+                                                               n1s[2], n1s[3])
+        mu_2N, sigma_2N, kappa_2N, nu_2N = natural_to_standard(n2s[0], n2s[1],
+                                                               n2s[2], n2s[3])
+        print 'label 1 parameters'
+        print mu_1N
+        print sigma_1N
+        print kappa_1N
+        print nu_1N
+
+        print 'label 2 parameters'
+        print mu_2N
+        print sigma_2N
+        print kappa_2N
+        print nu_2N
+
+        lliks1 = niw.expected_log_likelihood(obs, mu_1N, sigma_1N, kappa_1N, nu_1N)
+        lliks2 = niw.expected_log_likelihood(obs, mu_2N, sigma_2N, kappa_2N, nu_2N)
+        lliks = np.vstack((lliks1, lliks2)).T.copy(order='C')
+
+        lalpha = fb.forward_msgs(pi, A, lliks)
+        lbeta = fb.backward_msgs(A, lliks)
+
+        lexpected_states, lexpected_transcounts = fb.expected_statistics(pi, A, lliks,
+                                                                    lalpha, lbeta)
+        expected_states = np.exp(lexpected_states)
+        expected_states = expected_states / \
+            np.sum(expected_states, axis=1)[:,np.newaxis]
+        expected_transcounts = lexpected_transcounts / np.sum(expected_states,
+                                                            axis=0)[:,np.newaxis]
+
+        s1s = np.sum(expected_states, axis=0)
+        s2s = np.array([np.sum(obs*expected_states[:,i,np.newaxis], axis=0)
+                        for i in xrange(2)])
+        s3s = np.array([np.sum([np.outer(obs[i],obs[i])*expected_states[i,0]
+                                        for i in xrange(obs.shape[0])], axis=0),
+                        np.sum([np.outer(obs[i],obs[i])*expected_states[i,1]
+                                        for i in xrange(obs.shape[0])], axis=0)])
+
+        n11, n12, n13, n14 = niw.meanfield_update(n1s[0], n1s[1], n1s[2], n1s[3],
+                                                s1s[0], s2s[0], s3s[0])
+        n21, n22, n23, n24 = niw.meanfield_update(n2s[0], n2s[1], n2s[2], n2s[3],
+                                                s1s[1], s2s[1], s3s[1])
+        n1s = [n11, n12, n13, n14]
+        n2s = [n21, n22, n23, n24]
+
+    mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n11, n12, n13, n14)
+    mu_1, sigma_1 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
+    print 'label 1 after'
+    print mu_1
+    print sigma_1
+
+    mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n21, n22, n23, n24)
+    mu_2, sigma_2 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
+    print 'label 2 after'
+    print mu_2
+    print sigma_2
+
+
 if __name__ == '__main__':
-    test_basic()
+    #test_basic1()
+    test_basic2()
