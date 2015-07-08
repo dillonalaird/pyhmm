@@ -95,6 +95,17 @@ namespace niw {
         }
     }
 
+    template <typename Type>
+    void sufficient_statistics(int N, int D, Type* obs, Type* expected_states,
+                               Type* s1_, Type* s2_, Type* s3_) {
+        NPArray<Type> e_obs = NPArray<Type>(obs, N, D);
+        NPArray<Type> e_es  = NPArray<Type>(expected_states, N, 1);
+
+        Type& s1 = s1_;
+        NPArray<Type>  s2 = NPArray<Type>(s2_, D, 1);
+        NPMatrix<Type> s3 = NPMatrix<Type>(s3_, D, D);
+    }
+
 
     /*
      * Computes a variational meanfield update in natural parameter form.
