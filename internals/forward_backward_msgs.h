@@ -90,17 +90,13 @@ namespace fb {
     NPArray<Type> pair(pair_buf, S, S); 
 
     Type cmax;
-    Type cmax_holder_buf[4] __attribute__((aligned(16)));
-    NPArray<Type> cmax_holder(cmax_holder_buf, 4, 1);
 
     for (int t = 0; t < T-1; ++t) {
       pair = e_lA;
       pair.colwise() += e_lalpha.row(t).transpose().array();
       pair.rowwise() += e_lbeta.row(t+1) + e_lliks.row(t+1);
 
-      cmax_holder << e_lA.maxCoeff(), e_lalpha.row(t).maxCoeff(), 
-           e_lbeta.row(t+1).maxCoeff(), e_lliks.row(t+1).maxCoeff();
-      cmax = cmax_holder.maxCoeff();
+      cmax = pair.maxCoeff();
       pair -= log((pair - cmax).exp().sum()) + cmax;
 
       e_expected_transcounts += pair.exp();
