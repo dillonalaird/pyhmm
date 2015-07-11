@@ -96,13 +96,10 @@ def test_basic1():
     lalpha = fb.forward_msgs(pi, A, lliks)
     lbeta = fb.backward_msgs(A, lliks)
 
-    expected_states, expected_transcounts = fb.expected_statistics(pi, A, lliks,
-                                                                   lalpha, lbeta)
-    expected_states = np.exp(expected_states)
-    expected_states = expected_states / \
-        np.sum(expected_states, axis=1)[:,np.newaxis]
-    expected_transcounts = expected_transcounts / np.sum(expected_states,
-                                                         axis=0)[:,np.newaxis]
+    lexpected_states = lalpha + lbeta
+    lexpected_states -= np.max(lexpected_states, axis=1)[:,np.newaxis]
+    expected_states  = np.exp(lexpected_states)
+    expected_states /= np.sum(expected_states, axis=1)[:,np.newaxis]
 
     s1s = np.sum(expected_states, axis=0)
     s2s = np.array([np.sum(obs*expected_states[:,i,np.newaxis], axis=0)
@@ -183,17 +180,6 @@ def test_basic2():
                                                                n1s[2], n1s[3])
         mu_2N, sigma_2N, kappa_2N, nu_2N = natural_to_standard(n2s[0], n2s[1],
                                                                n2s[2], n2s[3])
-        print 'label 1 parameters'
-        print mu_1N
-        print sigma_1N
-        print kappa_1N
-        print nu_1N
-
-        print 'label 2 parameters'
-        print mu_2N
-        print sigma_2N
-        print kappa_2N
-        print nu_2N
 
         lliks1 = niw.expected_log_likelihood(obs, mu_1N, sigma_1N, kappa_1N, nu_1N)
         lliks2 = niw.expected_log_likelihood(obs, mu_2N, sigma_2N, kappa_2N, nu_2N)
@@ -202,13 +188,10 @@ def test_basic2():
         lalpha = fb.forward_msgs(pi, A, lliks)
         lbeta = fb.backward_msgs(A, lliks)
 
-        lexpected_states, lexpected_transcounts = fb.expected_statistics(pi, A, lliks,
-                                                                    lalpha, lbeta)
-        expected_states = np.exp(lexpected_states)
-        expected_states = expected_states / \
-            np.sum(expected_states, axis=1)[:,np.newaxis]
-        expected_transcounts = lexpected_transcounts / np.sum(expected_states,
-                                                            axis=0)[:,np.newaxis]
+        lexpected_states = lalpha + lbeta
+        lexpected_states -= np.max(lexpected_states, axis=1)[:,np.newaxis]
+        expected_states  = np.exp(lexpected_states)
+        expected_states /= np.sum(expected_states, axis=1)[:,np.newaxis]
 
         s1s = np.sum(expected_states, axis=0)
         s2s = np.array([np.sum(obs*expected_states[:,i,np.newaxis], axis=0)
@@ -227,13 +210,13 @@ def test_basic2():
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n11, n12, n13, n14)
     mu_1, sigma_1 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
-    print 'label 1 after'
+    print 'label 1 learned'
     print mu_1
     print sigma_1
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n21, n22, n23, n24)
     mu_2, sigma_2 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
-    print 'label 2 after'
+    print 'label 2 learned'
     print mu_2
     print sigma_2
 
