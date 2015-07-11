@@ -97,14 +97,16 @@ namespace fb {
       pair.rowwise() += e_lbeta.row(t+1) + e_lliks.row(t+1);
 
       cmax = pair.maxCoeff();
-      pair -= log((pair - cmax).exp().sum()) + cmax;
+      pair -= cmax;
 
       e_expected_transcounts += pair.exp();
-      e_lexpected_states.row(t) = (e_lalpha.row(t) + e_lbeta.row(t));
+      cmax = (e_lalpha.row(t) + e_lbeta.row(t)).maxCoeff();
+      e_lexpected_states.row(t) = (e_lalpha.row(t) + e_lbeta.row(t)) - cmax;
     }
 
     // don't need to add e_lbeta.row(T-1) here because it's 0
-    e_lexpected_states.row(T-1) = e_lalpha.row(T-1);
+    cmax = e_lalpha.row(T-1).maxCoeff();
+    e_lexpected_states.row(T-1) = e_lalpha.row(T-1) - cmax;
   }
 }
 
