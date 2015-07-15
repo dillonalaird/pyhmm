@@ -101,11 +101,16 @@ namespace niw {
         NPArray<Type> e_obs = NPArray<Type>(obs, N, D);
         NPArray<Type> e_es  = NPArray<Type>(expected_states, N, 1);
 
-        Type& s1 = s1_;
+        Type& s1 = *s1_;
         NPArray<Type>  s2 = NPArray<Type>(s2_, D, 1);
         NPMatrix<Type> s3 = NPMatrix<Type>(s3_, D, D);
-    }
 
+        for (int i = 0; i < N; ++i) {
+            s1 += e_es.coeff(i);
+            s2 += e_obs.row(i)*e_es.coeff(i);
+            s3 += e_obs.row(i).matrix()*e_obs.row(i).matrix().transpose()*e_es.coeff(i);
+        }
+    }
 
     /*
      * Computes a variational meanfield update in natural parameter form.
