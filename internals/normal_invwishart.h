@@ -61,6 +61,7 @@ namespace niw {
      * obs - The observations.
      *
      * The follow are hyperparameters for a normal-inverse-Wishart distribution.
+     *
      * mu_0_    - The mean hyperparameter.
      * sigma_0_ - The covariance hyperparameter.
      * kappa_0_ - psuedo counts for the mean.
@@ -95,6 +96,23 @@ namespace niw {
         }
     }
 
+    /*
+     * Calculates the sufficient statistics for a normal-inverse-Wishart
+     * distribution.
+     *
+     * N   - Number of observations.
+     * D   - Dimension of data.
+     * obs - The observations.
+     *
+     * expected_states - An N x 1 array representing the expected value for a
+     *                   given state.
+     *
+     * Containers for the weighted sufficient statistics.
+     *
+     * s1 - \sum_{i=1}^N w_i
+     * s2 - \sum_{i=1}^N w_i*x_i
+     * s3 - \sum_{i=1}^N w_i(x_i*x_i^T)
+     */
     template <typename Type>
     void expected_sufficient_statistics(int N, int D, Type* obs,
                                         Type* expected_states, Type* s1_, 
