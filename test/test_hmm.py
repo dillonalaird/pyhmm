@@ -105,9 +105,9 @@ def test_basic1():
     s2s = np.array([np.sum(obs*expected_states[:,i,np.newaxis], axis=0)
                     for i in xrange(2)])
     s3s = np.array([np.sum([np.outer(obs[i],obs[i])*expected_states[i,0]
-                                    for i in xrange(obs.shape[0])], axis=0),
+                            for i in xrange(obs.shape[0])], axis=0),
                     np.sum([np.outer(obs[i],obs[i])*expected_states[i,1]
-                                    for i in xrange(obs.shape[0])], axis=0)])
+                            for i in xrange(obs.shape[0])], axis=0)])
 
     n11, n12, n13, n14 = niw.meanfield_update(n1s[0], n1s[1], n1s[2], n1s[3],
                                               s1s[0], s2s[0], s3s[0])
@@ -155,14 +155,17 @@ def test_basic2():
     mus_N = np.array([np.mean(obs, axis=0), np.mean(obs, axis=0)])
     sigmas_N = 0.75*np.array([np.cov(obs.T), np.cov(obs.T)])
 
-    n1s = [kappa_0*mus_N[0],
-           kappa_0,
-           sigmas_N[0] + kappa_0*np.outer(mus_N[0],mus_N[0]),
-           nu_0 + D + 2]
-    n2s = [kappa_0*mus_N[1],
-           kappa_0,
-           sigmas_N[1] + kappa_0*np.outer(mus_N[1],mus_N[1]),
-           nu_0 + D + 2]
+    n1s_0 = [kappa_0*mus_N[0],
+             kappa_0,
+             sigmas_N[0] + kappa_0*np.outer(mus_N[0],mus_N[0]),
+             nu_0 + D + 2]
+    n2s_0 = [kappa_0*mus_N[1],
+             kappa_0,
+             sigmas_N[1] + kappa_0*np.outer(mus_N[1],mus_N[1]),
+             nu_0 + D + 2]
+
+    n1s_N = n1s_0[:]
+    n2s_N = n2s_0[:]
 
     iters = 10
 
@@ -176,10 +179,10 @@ def test_basic2():
 
     for _ in xrange(iters):
 
-        mu_1N, sigma_1N, kappa_1N, nu_1N = natural_to_standard(n1s[0], n1s[1],
-                                                               n1s[2], n1s[3])
-        mu_2N, sigma_2N, kappa_2N, nu_2N = natural_to_standard(n2s[0], n2s[1],
-                                                               n2s[2], n2s[3])
+        mu_1N, sigma_1N, kappa_1N, nu_1N = natural_to_standard(n1s_N[0], n1s_N[1],
+                                                               n1s_N[2], n1s_N[3])
+        mu_2N, sigma_2N, kappa_2N, nu_2N = natural_to_standard(n2s_N[0], n2s_N[1],
+                                                               n2s_N[2], n2s_N[3])
 
         lliks1 = niw.expected_log_likelihood(obs, mu_1N, sigma_1N, kappa_1N, nu_1N)
         lliks2 = niw.expected_log_likelihood(obs, mu_2N, sigma_2N, kappa_2N, nu_2N)
@@ -193,20 +196,22 @@ def test_basic2():
         expected_states  = np.exp(lexpected_states)
         expected_states /= np.sum(expected_states, axis=1)[:,np.newaxis]
 
-        s1s = np.sum(expected_states, axis=0)
-        s2s = np.array([np.sum(obs*expected_states[:,i,np.newaxis], axis=0)
-                        for i in xrange(2)])
-        s3s = np.array([np.sum([np.outer(obs[i],obs[i])*expected_states[i,0]
-                                        for i in xrange(obs.shape[0])], axis=0),
-                        np.sum([np.outer(obs[i],obs[i])*expected_states[i,1]
-                                        for i in xrange(obs.shape[0])], axis=0)])
+        s11, s12, s13 = niw.sufficient_statistics(obs,
+                expected_states[:,0].copy(order='C'))
+        s21, s22, s23 = niw.sufficient_statistics(obs,
+                expected_states[:,1].copy(order='C'))
+        s1s = np.array([s11, s21])
+        s2s = np.array([s12, s22])
+        s3s = np.array([s13, s23])
 
-        n11, n12, n13, n14 = niw.meanfield_update(n1s[0], n1s[1], n1s[2], n1s[3],
-                                                s1s[0], s2s[0], s3s[0])
-        n21, n22, n23, n24 = niw.meanfield_update(n2s[0], n2s[1], n2s[2], n2s[3],
-                                                s1s[1], s2s[1], s3s[1])
-        n1s = [n11, n12, n13, n14]
-        n2s = [n21, n22, n23, n24]
+        n11, n12, n13, n14 = niw.meanfield_update(n1s_0[0], n1s_0[1], n1s_0[2],
+                                                  n1s_0[3], s1s[0], s2s[0],
+                                                  s3s[0])
+        n21, n22, n23, n24 = niw.meanfield_update(n2s_0[0], n2s_0[1], n2s_0[2],
+                                                  n2s_0[3], s1s[1], s2s[1],
+                                                  s3s[1])
+        n1s_N = [n11, n12, n13, n14]
+        n2s_N = [n21, n22, n23, n24]
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n11, n12, n13, n14)
     mu_1, sigma_1 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
