@@ -12,6 +12,7 @@ import scipy.linalg
 import scipy.stats as stats
 import normal_invwishart as niw
 
+
 def _sample_niw(mu, lmbda, kappa, nu):
     lmbda = _sample_invwishart(lmbda, nu)
     mu = np.random.multivariate_normal(mu, lmbda/kappa)
@@ -42,6 +43,7 @@ def _sample_invwishart(S, nu):
     T = scipy.linalg.solve_triangular(R.T, chol.T, lower=True).T
     return np.dot(T, T.T)
 
+
 def _responsibilities(mu_0, sigma_0, kappa_0, nu_0, xs):
     # this is responsibilities for niw so we invert sigma_0
     D = mu_0.shape[0]
@@ -51,6 +53,7 @@ def _responsibilities(mu_0, sigma_0, kappa_0, nu_0, xs):
     xs = np.array([x_bar[i,:].T.dot(sigma_0).dot(x_bar[i,:])
                    for i in xrange(x_bar.shape[0])])
     return 0.5*(log_lambda_tilde - D*(1/kappa_0) - nu_0*xs - D*np.log(2*np.pi))
+
 
 def _log_lambda_tilde(sigma_0, nu_0):
     D = sigma_0.shape[0]
@@ -64,7 +67,7 @@ def _responsibilities2(mu_0, sigma_0, kappa_0, nu_0, xs):
     chol = np.linalg.cholesky(sigma_0)
     xs = np.reshape(xs,(-1,D))
     xs = np.linalg.solve(chol, xs.T)
-    return 0.5*(_log_lambda_tilde2(sigma_0, nu_0) - D*(1/kappa_0) - nu_0*\
+    return 0.5*(_log_lambda_tilde2(sigma_0, nu_0) - D*(1/kappa_0) - nu_0*
                 inner1d(xs.T,xs.T) - D*np.log(2*np.pi))
 
 
@@ -147,7 +150,7 @@ def test_update2():
     print '\tsigma_2 = ', (1/kappa_0)*sigma_2
 
     obs = np.array([mnorm.rvs(params[int(np.round(i/N))][0],
-                              (1/kappa_0)*params[int(np.round(i/N))][1])
+                              params[int(np.round(i/N))][1])
                     for i in xrange(1,N+1)])
 
     plt.scatter(obs[:,0], obs[:,1])
@@ -157,7 +160,7 @@ def test_update2():
     rs2 = _responsibilities(mus_0[1], sigmas_0[1], kappa_0, nu_0, obs)
     rs = np.vstack((rs1, rs2)).T
     rs = np.exp(rs)
-    rs = np.array([row/row.sum() for row in rs])
+    rs /= np.sum(rs, axis=1)[:,np.newaxis]
 
     s1s = np.sum(rs, axis=0)
     s2s = np.array([np.sum(obs*rs[:,i,np.newaxis], axis=0) for i in xrange(2)])
@@ -179,7 +182,7 @@ def test_update2():
     print '\tnu_0 = ', nu_0
 
     n1, n2, n3, n4 = niw.meanfield_update(n1s[0], n2s[0], n3s[0], n4s[0],
-                                           s1s[0], s2s[0], s3s[0])
+                                          s1s[0], s2s[0], s3s[0])
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n1, n2, n3, n4)
 
@@ -198,7 +201,7 @@ def test_update2():
     print '\tnu_0 = ', nu_0
 
     n1, n2, n3, n4 = niw.meanfield_update(n1s[1], n2s[1], n3s[1], n4s[1],
-                                           s1s[1], s2s[1], s3s[1])
+                                          s1s[1], s2s[1], s3s[1])
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n1, n2, n3, n4)
 
@@ -212,9 +215,9 @@ def test_update2():
 
     print 'resampled params'
     print '\tmu_1 = ', mu_1
-    print '\tsigma_1 = ', (1/kappa_0)*sigma_1
+    print '\tsigma_1 = ', sigma_1
     print '\tmu_2 = ', mu_2
-    print '\tsigma_2 = ', (1/kappa_0)*sigma_2
+    print '\tsigma_2 = ', sigma_2
 
 
 def test_expected_log_likelihood():
@@ -275,8 +278,49 @@ def test_log_likelihood():
     np.testing.assert_almost_equal(lliks_true[:,1], lliks_test2)
 
 
+def test_sufficient_statistics():
+    N = 10
+    mus_0 = np.array([[0.,0.], [20.,20.]])
+    sigmas_0 = np.array([np.eye(2), np.eye(2)])
+    kappa_0 = 0.5
+    nu_0 = 5
+
+    mu_1, sigma_1 = _sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
+    mu_2, sigma_2 = _sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
+    params = [[mu_1, sigma_1], [mu_2, sigma_2]]
+
+    obs = np.array([mnorm.rvs(params[int(np.round(i/N))][0],
+                              params[int(np.round(i/N))][1])
+                    for i in xrange(1,N+1)]).astype(np.float64)
+
+    rs1 = niw.expected_log_likelihood(obs, mus_0[0], sigmas_0[0], kappa_0, nu_0)
+    rs2 = niw.expected_log_likelihood(obs, mus_0[1], sigmas_0[1], kappa_0, nu_0)
+    rs = np.vstack((rs1, rs2)).T
+    rs = np.exp(rs)
+    rs /= np.sum(rs, axis=1)[:,np.newaxis]
+    rs = rs.copy(order='C')
+
+    s1s = np.sum(rs, axis=0)
+    s2s = np.array([np.sum(obs*rs[:,i,np.newaxis], axis=0) for i in xrange(2)])
+    s3s = np.array([np.sum([np.outer(obs[i],obs[i])*rs[i,0]
+                            for i in xrange(obs.shape[0])],axis=0),
+                    np.sum([np.outer(obs[i],obs[i])*rs[i,1]
+                            for i in xrange(obs.shape[0])],axis=0)])
+
+    s1, s2, s3 = niw.sufficient_statistics(obs, rs[:,0].copy(order='C'))
+    np.testing.assert_almost_equal(s1s[0], s1)
+    np.testing.assert_almost_equal(s2s[0], s2)
+    np.testing.assert_almost_equal(s3s[0], s3)
+
+    s1, s2, s3 = niw.sufficient_statistics(obs, rs[:,1].copy(order='C'))
+    np.testing.assert_almost_equal(s1s[1], s1)
+    np.testing.assert_almost_equal(s2s[1], s2)
+    np.testing.assert_almost_equal(s3s[1], s3)
+
+
 if __name__ == '__main__':
     #test_constructors()
     #test_update2()
-    test_expected_log_likelihood()
+    #test_expected_log_likelihood()
     #test_log_likelihood()
+    test_sufficient_statistics()
