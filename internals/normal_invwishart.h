@@ -108,7 +108,7 @@ namespace niw {
         for (int i = 0; i < N; ++i) {
             s1 += e_es.coeff(i);
             s2 += e_obs.row(i)*e_es.coeff(i);
-            s3 += e_obs.row(i).matrix()*e_obs.row(i).matrix().transpose()*e_es.coeff(i);
+            s3 += e_obs.row(i).matrix().transpose()*e_obs.row(i).matrix()*e_es.coeff(i);
         }
     }
 
