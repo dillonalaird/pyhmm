@@ -35,3 +35,14 @@ setup(name='normal_invwishart',
               include_dirs=[np.get_include(),],
               extra_compile_args=['-std=c++11'])
       ])
+
+dir_src = ['internals/dirichlet_interface.pyx']
+
+setup(name='dirichlet',
+      cmdclass={'build_ext': build_ext},
+      ext_modules=[
+          Extension('dirichlet', dir_src,
+              language='c++',
+              include_dirs=[np.get_include(),],
+              extra_compile_args=['-std=c++11'])
+      ])
