@@ -196,9 +196,9 @@ def test_basic2():
         expected_states  = np.exp(lexpected_states)
         expected_states /= np.sum(expected_states, axis=1)[:,np.newaxis]
 
-        s11, s12, s13 = niw.sufficient_statistics(obs,
+        s11, s12, s13 = niw.expected_sufficient_statistics(obs,
                 expected_states[:,0].copy(order='C'))
-        s21, s22, s23 = niw.sufficient_statistics(obs,
+        s21, s22, s23 = niw.expected_sufficient_statistics(obs,
                 expected_states[:,1].copy(order='C'))
         s1s = np.array([s11, s21])
         s2s = np.array([s12, s22])

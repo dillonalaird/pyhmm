@@ -96,8 +96,9 @@ namespace niw {
     }
 
     template <typename Type>
-    void sufficient_statistics(int N, int D, Type* obs, Type* expected_states,
-                               Type* s1_, Type* s2_, Type* s3_) {
+    void expected_sufficient_statistics(int N, int D, Type* obs,
+                                        Type* expected_states, Type* s1_, 
+                                        Type* s2_, Type* s3_) {
         NPArray<Type> e_obs = NPArray<Type>(obs, N, D);
         NPArray<Type> e_es  = NPArray<Type>(expected_states, N, 1);
 

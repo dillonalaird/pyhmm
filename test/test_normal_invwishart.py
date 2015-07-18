@@ -307,12 +307,12 @@ def test_sufficient_statistics():
                     np.sum([np.outer(obs[i],obs[i])*rs[i,1]
                             for i in xrange(obs.shape[0])],axis=0)])
 
-    s1, s2, s3 = niw.sufficient_statistics(obs, rs[:,0].copy(order='C'))
+    s1, s2, s3 = niw.expected_sufficient_statistics(obs, rs[:,0].copy(order='C'))
     np.testing.assert_almost_equal(s1s[0], s1)
     np.testing.assert_almost_equal(s2s[0], s2)
     np.testing.assert_almost_equal(s3s[0], s3)
 
-    s1, s2, s3 = niw.sufficient_statistics(obs, rs[:,1].copy(order='C'))
+    s1, s2, s3 = niw.expected_sufficient_statistics(obs, rs[:,1].copy(order='C'))
     np.testing.assert_almost_equal(s1s[1], s1)
     np.testing.assert_almost_equal(s2s[1], s2)
     np.testing.assert_almost_equal(s3s[1], s3)

@@ -42,13 +42,13 @@ def log_likelihood(np.ndarray[np.double_t, ndim=2, mode='c'] obs not None,
     return lliks
 
 
-def sufficient_statistics(np.ndarray[np.double_t, ndim=2, mode='c'] obs not None,
-                          np.ndarray[np.double_t, ndim=1, mode='c'] expected_states not None):
+def expected_sufficient_statistics(np.ndarray[np.double_t, ndim=2, mode='c'] obs not None,
+                                   np.ndarray[np.double_t, ndim=1, mode='c'] expected_states not None):
     cdef int N = obs.shape[0]
     cdef int D = obs.shape[1]
     cdef np.double_t s1 = 0.
     cdef np.ndarray[np.double_t, ndim=1, mode='c'] s2 = np.zeros(D)
     cdef np.ndarray[np.double_t, ndim=2, mode='c'] s3 = np.zeros((D,D))
-    niw.sufficient_statistics(N, D, &obs[0,0], &expected_states[0], &s1, &s2[0],
-                              &s3[0,0])
+    niw.expected_sufficient_statistics(N, D, &obs[0,0], &expected_states[0],
+                                      &s1, &s2[0], &s3[0,0])
     return s1, s2, s3
