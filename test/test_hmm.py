@@ -1,5 +1,6 @@
 from __future__ import division
 from scipy.stats import multivariate_normal as mnorm
+from matplotlib import pyplot as plt
 
 import numpy as np
 import scipy.stats as stats
@@ -135,14 +136,14 @@ def test_basic2():
     A = np.array([[0.9, 0.1],
                   [0.1, 0.9]])
     mus_0 = np.array([[0.,0.], [20.,20.]])
-    sigmas_0 = np.array([np.eye(2), 2*np.eye(2)])
+    sigmas_0 = np.array([np.eye(2), 5*np.eye(2)])
     kappa_0 = 0.5
     nu_0 = 5
 
     mu_1, sigma_1 = _sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
     mu_2, sigma_2 = _sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
 
-    params = [[mu_1, sigma_1], [mu_2, sigma_1]]
+    params = [[mu_1, sigma_1], [mu_2, sigma_2]]
 
     obs = [mnorm.rvs(mu_1, sigma_1)]
     s = 0
@@ -151,6 +152,9 @@ def test_basic2():
         obs.append(mnorm.rvs(params[s][0], params[s][1]))
 
     obs = np.array(obs)
+
+    plt.scatter(obs[:,0], obs[:,1])
+    plt.show()
 
     mus_N = np.array([np.mean(obs, axis=0), np.mean(obs, axis=0)])
     sigmas_N = 0.75*np.array([np.cov(obs.T), np.cov(obs.T)])
@@ -167,7 +171,7 @@ def test_basic2():
     n1s_N = n1s_0[:]
     n2s_N = n2s_0[:]
 
-    iters = 10
+    iters = 20
 
     print 'label 1 true'
     print mus_0[0]
