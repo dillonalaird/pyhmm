@@ -28,6 +28,14 @@ namespace dir {
             }
         }
     }
+
+    template <typename Type>
+    void meanfield_update(int S, Type* nat_params, Type* ss) {
+        NPMatrix<Type> e_ns = NPMatrix<Type>(nat_params, S, S);
+        NPMatrix<Type> e_ss = NPMatrix<Type>(ss, S, S);
+
+        e_ns += e_ss;
+    }
 }
 
 #endif
