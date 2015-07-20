@@ -1,5 +1,5 @@
 from __future__ import division
-import os, sys, inspect
+import os, sys
 
 # this is so we can import from pyhmm
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
@@ -17,6 +17,7 @@ def forward_messages_corr(pi, A, lliks):
         lalpha[t+1] = np.logaddexp.reduce(lalpha[t] + Al.T, axis=1) + lliks[t+1]
 
     return lalpha
+
 
 def backward_messages_corr(A, lliks):
     Al = np.log(A)
@@ -37,7 +38,7 @@ def test_simple_fb():
     obs = np.empty(N)
     dist = np.array([[0, 1], [5, 1]])
     obs = np.array([norm.rvs(dist[np.round(i/N),0], dist[np.round(i/N),1])
-        for i in xrange(1, N+1)])
+                    for i in xrange(1, N+1)])
 
     # lliks needs to have 2 dimensions
     lliks = np.array([[norm.logpdf(ob, dist[np.round((i+1)/N),0],
@@ -63,7 +64,7 @@ def test_expected_states_and_transcount():
     pi = np.array([0.99, 0.01])
     # we have 1 transition from 0 to 1
     A = np.array([[(N-1)/N, 1-(N-1)/N],
-                  [1e-7, 1.0-1e-7]])
+                  [1-(N-1)/N, (N-1)/N]])
 
     obs = np.empty(N)
     dist = np.array([[0, 1], [5, 1]])
@@ -82,14 +83,12 @@ def test_expected_states_and_transcount():
     lalpha = fb.forward_msgs(pi, A, lliks)
     lbeta = fb.backward_msgs(A, lliks)
 
-    expected_states, expected_transcounts = fb.expected_statistics(pi, A, lliks,
+    lexpected_states, expected_transcounts = fb.expected_statistics(pi, A, lliks,
             lalpha, lbeta)
-    expected_states = np.exp(expected_states)
+    expected_states = np.exp(lexpected_states)
     expected_states = expected_states / \
             np.sum(expected_states, axis=1)[:,np.newaxis]
-
-    expected_transcounts = expected_transcounts / np.sum(
-            expected_states[:len(expected_states)-1,:], axis=0)[:,np.newaxis]
+    expected_transcounts /= np.sum(expected_transcounts, axis=1)[:,np.newaxis]
 
     expected_transcounts_corr = np.array([[1., 0.],
                                           [0., 1.]])
@@ -103,5 +102,5 @@ def test_expected_states_and_transcount():
 
 
 if __name__ == '__main__':
-    test_simple_fb()
+    #test_simple_fb()
     test_expected_states_and_transcount()
