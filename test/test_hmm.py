@@ -286,6 +286,9 @@ def test_basic3():
     print mu_2
     print sigma_2
 
+    print 'A_nat_0'
+    print A_nat_0
+
     for _ in xrange(iters):
         mu_1N, sigma_1N, kappa_1N, nu_1N = natural_to_standard(n1s_N[0], n1s_N[1],
                                                                n1s_N[2], n1s_N[3])
@@ -309,11 +312,14 @@ def test_basic3():
         #lexpected_states -= np.max(lexpected_states, axis=1)[:,np.newaxis]
         expected_states  = np.exp(lexpected_states)
         expected_states /= np.sum(expected_states, axis=1)[:,np.newaxis]
-        expected_transcounts /= np.sum(expected_transcounts,
-                                       axis=1)[:,np.newaxis]
 
+        A_ss = np.zeros_like(A_nat_0)
+        for i in xrange(1,expected_states.shape[0]):
+            A_ss += np.outer(expected_states[i-1], expected_states[i])
 
-        A_ss = np.log(expected_transcounts)
+        # convert to natural parameter?
+        A_ss -= 1
+
         A_nat_N = dir.meanfield_update(A_nat_0, A_ss)
 
         s11, s12, s13 = niw.expected_sufficient_statistics(obs,
