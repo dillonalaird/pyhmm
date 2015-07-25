@@ -313,9 +313,10 @@ def test_basic3():
         expected_states  = np.exp(lexpected_states)
         expected_states /= np.sum(expected_states, axis=1)[:,np.newaxis]
 
-        A_ss = np.zeros_like(A_nat_0)
-        for i in xrange(1,expected_states.shape[0]):
-            A_ss += np.outer(expected_states[i-1], expected_states[i])
+        #A_ss = np.zeros_like(A_nat_0)
+        #for i in xrange(1,expected_states.shape[0]):
+        #    A_ss += np.outer(expected_states[i-1], expected_states[i])
+        A_ss = dir.sufficient_statistics(expected_states)
 
         # convert to natural parameter?
         A_ss -= 1
