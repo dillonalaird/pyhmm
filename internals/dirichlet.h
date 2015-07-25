@@ -30,6 +30,16 @@ namespace dir {
     }
 
     template <typename Type>
+    void sufficient_statistics(int S, int N, Type* expected_states, Type* ss) {
+        NPArray<Type>  e_es = NPArray<Type>(expected_states, N, S);
+        NPMatrix<Type> e_ss = NPMatrix<Type>(ss, S, S);
+
+        for (int i = 1; i < N; ++i) {
+            e_ss += e_es.row(i-1).matrix().transpose()*e_es.row(i).matrix();
+        }
+    }
+
+    template <typename Type>
     void meanfield_update(int S, Type* nat_params, Type* ss) {
         NPMatrix<Type> e_ns = NPMatrix<Type>(nat_params, S, S);
         NPMatrix<Type> e_ss = NPMatrix<Type>(ss, S, S);
