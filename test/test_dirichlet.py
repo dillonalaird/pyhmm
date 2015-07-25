@@ -1,3 +1,4 @@
+from __future__ import division
 from scipy.special import digamma
 
 import os, sys
@@ -24,5 +25,50 @@ def test_expected_sufficient_statistics():
     np.testing.assert_almost_equal(ess_true, ess_pred)
 
 
+def test_sufficient_statistics1():
+    N = 100
+    dists = np.array([[1.,0.], [0.,1.]])
+    expected_states = np.array([dists[round(i/N)] for i in xrange(N)])
+
+    ss_true = np.zeros((2,2))
+    for i in xrange(1,expected_states.shape[0]):
+        ss_true += np.outer(expected_states[i-1],expected_states[i])
+
+    ss = dir.sufficient_statistics(expected_states)
+
+    np.testing.assert_almost_equal(ss, ss_true, decimal=1)
+
+
+def test_sufficient_statistics2():
+    N = 100
+    dists = np.array([[0.5,0.5], [0.5,0.5]])
+    expected_states = np.array([dists[round(i/N)] for i in xrange(N)])
+
+    ss_true = np.zeros((2,2))
+    for i in xrange(1,expected_states.shape[0]):
+        ss_true += np.outer(expected_states[i-1],expected_states[i])
+
+    ss = dir.sufficient_statistics(expected_states)
+
+    np.testing.assert_almost_equal(ss, ss_true, decimal=1)
+
+
+def test_sufficient_statistics3():
+    N = 100
+    dists = np.array([[0.75,0.25], [0.99,0.01]])
+    expected_states = np.array([dists[round(i/N)] for i in xrange(N)])
+
+    ss_true = np.zeros((2,2))
+    for i in xrange(1,expected_states.shape[0]):
+        ss_true += np.outer(expected_states[i-1],expected_states[i])
+
+    ss = dir.sufficient_statistics(expected_states)
+
+    np.testing.assert_almost_equal(ss, ss_true, decimal=1)
+
+
 if __name__ == '__main__':
-    test_expected_sufficient_statistics()
+    #test_expected_sufficient_statistics()
+    test_sufficient_statistics1()
+    test_sufficient_statistics2()
+    test_sufficient_statistics3()
