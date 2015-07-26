@@ -181,8 +181,8 @@ namespace niw {
         // Get natural parameters
         NPMatrix<Type> n3_N = NPMatrix<Type>(nat_params_N, D, D);
         NPVector<Type> n1_N = NPVector<Type>(&nat_params_N[D*D], D, 1);
-        Type& n2_N = nat_params_0[D*(D+1)];
-        Type& n4_N = nat_params_0[D*(D+2)];
+        Type& n2_N = nat_params_N[D*(D+1)];
+        Type& n4_N = nat_params_N[D*(D+2)];
 
         // Get sufficient statistics
         Type& s1 = s1_;
