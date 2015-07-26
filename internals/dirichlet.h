@@ -79,7 +79,13 @@ namespace dir {
 
     template <typename Type>
     void meanfield_sgd_update(int S, Type lrate, Type bfactor,
-                              Type* nat_params_0, Type* ess) {
+                              Type* nat_params_0, Type* nat_params_N, 
+                              Type* ess) {
+        NPMatrix<Type> e_ns_0 = NPMatrix<Type>(nat_params_0, S, S);
+        NPMatrix<Type> e_ns_N = NPMatrix<Type>(nat_params_N, S, S);
+        NPMatrix<Type> e_ss   = NPMatrix<Type>(ess, S, S);
+
+        e_ns_N = (1 - lrate)*e_ns_N + lrate*(e_ns_0 + bfactor*e_ss);
     }
 }
 

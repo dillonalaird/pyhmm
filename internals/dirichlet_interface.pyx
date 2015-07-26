@@ -24,5 +24,15 @@ def meanfield_update(np.ndarray[np.double_t, ndim=2, mode='c'] nat_params not No
                      np.ndarray[np.double_t, ndim=2, mode='c'] ss not None):
     cdef int S = nat_params.shape[0]
     cdef np.ndarray[np.double_t, ndim=2, mode='c'] nat_params_ = nat_params.copy()
-    dir.meanfield_update(S, &nat_params_[0,0], &ss[0,0])
+    dir.meanfield_update[np.double_t](S, &nat_params_[0,0], &ss[0,0])
     return nat_params_
+
+
+def meanfield_sgd_update(np.ndarray[np.double_t, ndim=2, mode='c'] nat_params_0 not None,
+                         np.ndarray[np.double_t, ndim=2, mode='c'] nat_params_N not None,
+                         np.ndarray[np.double_t, ndim=2, mode='c'] ess not None,
+                         np.double_t lrate, np.double_t bfactor):
+    cdef int S = nat_params_0.shape[0]
+    dir.meanfield_sgd_update[np.double_t](S, lrate, bfactor, &nat_params_0[0,0],
+                                          &nat_params_N[0,0], &ess[0,0])
+    return nat_params_N
