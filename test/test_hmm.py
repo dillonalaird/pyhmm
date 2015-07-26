@@ -302,8 +302,8 @@ def test_basic3():
         lA_mod = dir.expected_sufficient_statistics(A_nat_N + 1)
         A_mod = np.exp(lA_mod)
 
-        lalpha = fb.forward_msgs(pi, A, lliks)
-        lbeta = fb.backward_msgs(A, lliks)
+        lalpha = fb.forward_msgs(pi, A_mod, lliks)
+        lbeta = fb.backward_msgs(A_mod, lliks)
 
         lexpected_states, expected_transcounts = fb.expected_statistics(pi,
                 A_mod, lliks, lalpha, lbeta)
