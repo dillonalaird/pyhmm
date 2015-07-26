@@ -23,7 +23,7 @@ def test_meanfield_sgd_update():
     nat_params_N_test = dir.meanfield_sgd_update(nat_params_0, nat_params_N,
                                                  ess, lrate, bfactor)
 
-    np.testing.assert_almost_equal(nat_params_N_true, nat_params_N_test)
+    np.testing.assert_almost_equal(nat_params_N_test, nat_params_N_true)
 
 
 
@@ -39,8 +39,8 @@ def test_expected_sufficient_statistics():
                        [3.,4.]])
 
     ess_true = digamma(alphas) - digamma(np.sum(alphas, axis=1)[:,np.newaxis])
-    ess_pred = dir.expected_sufficient_statistics(alphas)
-    np.testing.assert_almost_equal(ess_true, ess_pred)
+    ess_test = dir.expected_sufficient_statistics(alphas)
+    np.testing.assert_almost_equal(ess_test, ess_true)
 
 
 def test_sufficient_statistics1():
@@ -80,9 +80,9 @@ def test_sufficient_statistics3():
     for i in xrange(1,expected_states.shape[0]):
         ss_true += np.outer(expected_states[i-1],expected_states[i])
 
-    ss = dir.sufficient_statistics(expected_states)
+    ss_test = dir.sufficient_statistics(expected_states)
 
-    np.testing.assert_almost_equal(ss, ss_true, decimal=1)
+    np.testing.assert_almost_equal(ss_test, ss_true, decimal=1)
 
 
 if __name__ == '__main__':

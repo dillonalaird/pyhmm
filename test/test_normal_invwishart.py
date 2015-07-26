@@ -323,8 +323,8 @@ def test_log_likelihood():
     lliks_test1 = niw.log_likelihood(obs, mu_1, sigma_1)
     lliks_test2 = niw.log_likelihood(obs, mu_2, sigma_2)
 
-    np.testing.assert_almost_equal(lliks_true[:,0], lliks_test1)
-    np.testing.assert_almost_equal(lliks_true[:,1], lliks_test2)
+    np.testing.assert_almost_equal(lliks_test1, lliks_true[:,0])
+    np.testing.assert_almost_equal(lliks_test2, lliks_true[:,1])
 
 
 def test_sufficient_statistics():
@@ -357,14 +357,14 @@ def test_sufficient_statistics():
                             for i in xrange(obs.shape[0])],axis=0)])
 
     s1, s2, s3 = niw.expected_sufficient_statistics(obs, rs[:,0].copy(order='C'))
-    np.testing.assert_almost_equal(s1s[0], s1)
-    np.testing.assert_almost_equal(s2s[0], s2)
-    np.testing.assert_almost_equal(s3s[0], s3)
+    np.testing.assert_almost_equal(s1, s1s[0])
+    np.testing.assert_almost_equal(s2, s2s[0])
+    np.testing.assert_almost_equal(s3, s3s[0])
 
     s1, s2, s3 = niw.expected_sufficient_statistics(obs, rs[:,1].copy(order='C'))
-    np.testing.assert_almost_equal(s1s[1], s1)
-    np.testing.assert_almost_equal(s2s[1], s2)
-    np.testing.assert_almost_equal(s3s[1], s3)
+    np.testing.assert_almost_equal(s1, s1s[1])
+    np.testing.assert_almost_equal(s2, s2s[1])
+    np.testing.assert_almost_equal(s3, s3s[1])
 
 
 if __name__ == '__main__':
