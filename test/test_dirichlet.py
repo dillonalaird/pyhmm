@@ -9,6 +9,24 @@ import numpy as np
 import dirichlet as dir
 
 
+def test_meanfield_sgd_update():
+    nat_params_0 = np.ones((2,2)).reshape(2,2)
+    nat_params_N = 2.5*np.ones((2,2)).reshape(2,2)
+    lrate   = 0.01
+    bfactor = 10.
+    ess = np.array([[25., 20.],
+                    [10., 25.]])
+
+    nat_params_N_true = (1 - lrate)*nat_params_N + lrate*(nat_params_0 +
+                                                          bfactor*ess)
+
+    nat_params_N_test = dir.meanfield_sgd_update(nat_params_0, nat_params_N,
+                                                 ess, lrate, bfactor)
+
+    np.testing.assert_almost_equal(nat_params_N_true, nat_params_N_test)
+
+
+
 def test_expected_sufficient_statistics():
     alphas = np.array([[1.,1.],
                        [1.,1.]])
@@ -68,7 +86,8 @@ def test_sufficient_statistics3():
 
 
 if __name__ == '__main__':
+    test_meanfield_sgd_update()
     #test_expected_sufficient_statistics()
-    test_sufficient_statistics1()
-    test_sufficient_statistics2()
-    test_sufficient_statistics3()
+    #test_sufficient_statistics1()
+    #test_sufficient_statistics2()
+    #test_sufficient_statistics3()
