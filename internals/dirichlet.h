@@ -15,6 +15,16 @@ namespace dir {
     using namespace nptypes;
     using namespace eigentypes;
 
+    /*
+     * Calculates the expected sufficient statistics.
+     *
+     * S      - The number of dirichlet parameters.
+     * alphas - The dirichlet parameters.
+     *
+     * Container for the expected sufficient statistics.
+     *
+     * ess - \psi(\alpha_{i,j}) - \psi(\sum_{j=1}^S \alpha_{i,j})
+     */
     template <typename Type>
     void expected_sufficient_statistics(int S, Type* alphas, Type* ess) {
         NPMatrix<Type> e_alphas = NPMatrix<Type>(alphas, S, S);
@@ -29,6 +39,18 @@ namespace dir {
         }
     }
 
+    /*
+     * Calculates the sufficient statistics for the dirichlet distribution.
+     *
+     * S - The number of dirichlet parameters.
+     * N - The number of observations.
+     *
+     * expected_states - The expected states.
+     *
+     * Container for the sufficient statistics.
+     *
+     * ss - \sum_{i=2}^N expected_states_{i-1}^T*expected_states_i
+     */
     template <typename Type>
     void sufficient_statistics(int S, int N, Type* expected_states, Type* ss) {
         NPArray<Type>  e_es = NPArray<Type>(expected_states, N, S);
@@ -39,12 +61,25 @@ namespace dir {
         }
     }
 
+    /*
+     * Calculates the meanfield update.
+     *
+     * S - The number of dirichlet parameters.
+     * 
+     * nat_params - The natural parameters.
+     * ss         - The sufficient statistics.
+     */
     template <typename Type>
-    void meanfield_update(int S, Type* nat_params, Type* ss) {
-        NPMatrix<Type> e_ns = NPMatrix<Type>(nat_params, S, S);
+    void meanfield_update(int S, Type* nat_params_0, Type* ss) {
+        NPMatrix<Type> e_ns = NPMatrix<Type>(nat_params_0, S, S);
         NPMatrix<Type> e_ss = NPMatrix<Type>(ss, S, S);
 
         e_ns += e_ss;
+    }
+
+    template <typename Type>
+    void meanfield_sgd_update(int S, Type lrate, Type bfactor,
+                              Type* nat_params_0, Type* ess) {
     }
 }
 
