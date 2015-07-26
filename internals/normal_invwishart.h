@@ -152,20 +152,47 @@ namespace niw {
      * s3 - \sum_{i=1}^N w_i(x_i*x_i^T)
      */
     template  <typename Type>
-    void meanfield_update(int D, Type* nat_params, Type s1_, Type* s2_, Type* s3_) {
-        NPMatrix<Type> n3 = NPMatrix<Type>(nat_params, D, D);
-        NPVector<Type> n1 = NPVector<Type>(&nat_params[D*D], D, 1);
-        Type& n2 = nat_params[D*(D+1)];
-        Type& n4 = nat_params[D*(D+2)];
+    void meanfield_update(int D, Type* nat_params_0, Type s1_, Type* s2_, Type* s3_) {
+        NPMatrix<Type> n3 = NPMatrix<Type>(nat_params_0, D, D);
+        NPVector<Type> n1 = NPVector<Type>(&nat_params_0[D*D], D, 1);
+        Type& n2 = nat_params_0[D*(D+1)];
+        Type& n4 = nat_params_0[D*(D+2)];
 
         Type& s1 = s1_;
-        NPMatrix<Type> s2 = NPMatrix<Type>(s2_, D, 1);
-        NPVector<Type> s3 = NPVector<Type>(s3_, D, D);
+        NPVector<Type> s2 = NPVector<Type>(s2_, D, 1);
+        NPMatrix<Type> s3 = NPMatrix<Type>(s3_, D, D);
         
         n1 += s2;
         n2 += s1;
         n3 += s3;
         n4 += s1;
+    }
+
+    template <typename Type>
+    void meanfield_sgd_update(int D, Type lrate, Type bfactor,
+                              Type* nat_params_0, Type* nat_params_N,
+                              Type s1_, Type* s2_, Type* s3_) {
+        // Get natural hyperparameters
+        NPMatrix<Type> n3_0 = NPMatrix<Type>(nat_params_0, D, D);
+        NPVector<Type> n1_0 = NPVector<Type>(&nat_params_0[D*D], D, 1);
+        Type& n2_0 = nat_params_0[D*(D+1)];
+        Type& n4_0 = nat_params_0[D*(D+2)];
+
+        // Get natural parameters
+        NPMatrix<Type> n3_N = NPMatrix<Type>(nat_params_N, D, D);
+        NPVector<Type> n1_N = NPVector<Type>(&nat_params_N[D*D], D, 1);
+        Type& n2_N = nat_params_0[D*(D+1)];
+        Type& n4_N = nat_params_0[D*(D+2)];
+
+        // Get sufficient statistics
+        Type& s1 = s1_;
+        NPVector<Type> s2 = NPVector<Type>(s2_, D, 1);
+        NPMatrix<Type> s3 = NPMatrix<Type>(s3_, D, D);
+
+        n1_N = (1 - lrate)*n1_N + lrate*(n1_0 + bfactor*s2);
+        n2_N = (1 - lrate)*n2_N + lrate*(n2_0 + bfactor*s1); 
+        n3_N = (1 - lrate)*n3_N + lrate*(n3_0 + bfactor*s3);
+        n4_N = (1 - lrate)*n4_N + lrate*(n4_0 + bfactor*s1);
     }
 }
 
