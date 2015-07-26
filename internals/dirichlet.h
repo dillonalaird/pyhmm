@@ -84,7 +84,7 @@ namespace dir {
      * lrate   - The learning rate.
      * bfactor - The batch factor.
      *
-     * nat_params_0 - The initial natural parameters.
+     * nat_params_0 - The prior natural parameters.
      * nat_params_N - The natural parameters.
      * ess          - The expected sufficient statistics.
      */
