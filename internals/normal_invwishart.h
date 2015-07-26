@@ -47,7 +47,7 @@ namespace niw {
         Type log_sigma_0_det = log(sigma_0_inv.determinant());
 
         Type sum = 0.0;
-        for (int i = 0; i < D; ++i) sum += math::digamma((nu_0 + 1 - i)/2);
+        for (int i = 1; i < D + 1; ++i) sum += math::digamma((nu_0 + 1 - i)/2);
 
         return sum + D*log2 + log_sigma_0_det;
     }
