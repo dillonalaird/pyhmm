@@ -77,6 +77,17 @@ namespace dir {
         e_ns += e_ss;
     }
 
+    /*
+     * Calculates the stochastic gradient descent meanfield update.
+     *
+     * S       - The number of dirichlet parameters.
+     * lrate   - The learning rate.
+     * bfactor - The batch factor.
+     *
+     * nat_params_0 - The initial natural parameters.
+     * nat_params_N - The natural parameters.
+     * ess          - The expected sufficient statistics.
+     */
     template <typename Type>
     void meanfield_sgd_update(int S, Type lrate, Type bfactor,
                               Type* nat_params_0, Type* nat_params_N, 
