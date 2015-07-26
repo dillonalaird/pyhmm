@@ -220,6 +220,55 @@ def test_update2():
     print '\tsigma_2 = ', sigma_2
 
 
+def test_meanfield_sgd_update():
+    D = 2
+    mu_0 = 1.0*np.ones(2)
+    sigma_0 = 1.0*np.eye(2)
+    kappa_0 = 0.5
+    nu_0 = 5.
+
+    mu_N = 1.5*np.ones(2)
+    sigma_N = 1.5*np.eye(2)
+    kappa_N = 10.5
+    nu_N = 10.
+
+    lrate = 0.1
+    bfactor = 10.
+
+    n1_0, n2_0, n3_0, n4_0 = standard_to_natural(mu_0, sigma_0, kappa_0, nu_0)
+    n1_N, n2_N, n3_N, n4_N = standard_to_natural(mu_N, sigma_N, kappa_N, nu_N)
+
+    nat_params_0 = np.zeros((D+3,D))
+    nat_params_0[:D,:D] = n3_0.copy()
+    nat_params_0[D,:]   = n1_0.copy()
+    nat_params_0[D+1,0] = n2_0
+    nat_params_0[D+2,0] = n4_0
+
+    nat_params_N = np.zeros((D+3,D))
+    nat_params_N[:D,:D] = n3_N.copy()
+    nat_params_N[D,:]   = n1_N.copy()
+    nat_params_N[D+1,0] = n2_N
+    nat_params_N[D+2,0] = n4_N
+
+    s1 = 10.
+    s2 = 5.0*np.ones(2)
+    s3 = 5.0*np.eye(2)
+
+    n1_N_true = (1 - lrate)*n1_N + lrate*(n1_0 + bfactor*s2)
+    n2_N_true = (1 - lrate)*n2_N + lrate*(n2_0 + bfactor*s1)
+    n3_N_true = (1 - lrate)*n3_N + lrate*(n3_0 + bfactor*s3)
+    n4_N_true = (1 - lrate)*n4_N + lrate*(n4_0 + bfactor*s1)
+
+    nat_params_N_test = niw.meanfield_sgd_update(nat_params_0, nat_params_N, s1,
+                                                 s2, s3, lrate, bfactor)
+
+    np.testing.assert_almost_equal(nat_params_N_test[D,:],   n1_N_true)
+    np.testing.assert_almost_equal(nat_params_N_test[D+1,0], n2_N_true)
+    np.testing.assert_almost_equal(nat_params_N_test[:D,:D], n3_N_true)
+    np.testing.assert_almost_equal(nat_params_N_test[D+2,0], n4_N_true)
+
+
+
 def test_expected_log_likelihood():
     N = 10
     mus_0 = np.array([[0.,0.], [20.,20.]])
@@ -323,4 +372,5 @@ if __name__ == '__main__':
     #test_update2()
     #test_expected_log_likelihood()
     #test_log_likelihood()
-    test_sufficient_statistics()
+    #test_sufficient_statistics()
+    test_meanfield_sgd_update()
