@@ -1,10 +1,10 @@
 from __future__ import division
 from scipy.stats import multivariate_normal as mnorm
 from matplotlib import pyplot as plt
+from test_utils import sample_niw, natural_to_standard
 
 import numpy as np
 import scipy.stats as stats
-import scipy
 import os, sys
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
@@ -12,42 +12,6 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.par
 import forward_backward as fb
 import normal_invwishart as niw
 import dirichlet as dir
-
-
-def _sample_niw(mu, lmbda, kappa, nu):
-    lmbda = _sample_invwishart(lmbda, nu)
-    mu = np.random.multivariate_normal(mu, lmbda/kappa)
-    return mu, lmbda
-
-
-def _sample_invwishart(S, nu):
-    n = S.shape[0]
-    chol = np.linalg.cholesky(S)
-
-    if (nu <= 81+n) and (nu == np.round(nu)):
-        x = np.random.randn(nu, n)
-    else:
-        x = np.diag(np.sqrt(np.atleast_1d(stats.chi2.rvs(nu-np.arange(n)))))
-        x[np.triu_indices_from(x,1)] = np.random.randn(n*(n-1)//2)
-    R = np.linalg.qr(x, 'r')
-    T = scipy.linalg.solve_triangular(R.T, chol.T, lower=True).T
-    return np.dot(T, T.T)
-
-
-def standard_to_natural(mu_0, sigma_0, kappa_0, nu_0):
-    n1 = kappa_0*mu_0
-    n2 = kappa_0
-    n3 = sigma_0 + kappa_0*np.outer(mu_0, mu_0)
-    n4 = nu_0 + 2 + mu_0.shape[0]
-    return n1, n2, n3, n4
-
-
-def natural_to_standard(n1, n2, n3, n4):
-    kappa_0 = n2
-    mu_0 = n1/n2
-    sigma_0 = n3 - kappa_0*np.outer(mu_0, mu_0)
-    nu_0 = n4 - 2 - mu_0.shape[0]
-    return mu_0, sigma_0, kappa_0, nu_0
 
 
 def generate_data(D, N, pi, A, params):
@@ -71,8 +35,8 @@ def test_basic1():
     kappa_0 = 0.5
     nu_0 = 5
 
-    mu_1, sigma_1 = _sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
-    mu_2, sigma_2 = _sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
+    mu_1, sigma_1 = sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
+    mu_2, sigma_2 = sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
 
     print 'label 1 before'
     print mu_1
@@ -122,13 +86,13 @@ def test_basic1():
 
     # Note might need to add small positive to diagonal
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n11, n12, n13, n14)
-    mu_1, sigma_1 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
+    mu_1, sigma_1 = sample_niw(mu_0, sigma_0, kappa_0, nu_0)
     print 'label 1 after'
     print mu_1
     print sigma_1
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n21, n22, n23, n24)
-    mu_2, sigma_2 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
+    mu_2, sigma_2 = sample_niw(mu_0, sigma_0, kappa_0, nu_0)
     print 'label 2 after'
     print mu_2
     print sigma_2
@@ -145,8 +109,8 @@ def test_basic2():
     kappa_0 = 0.5
     nu_0 = 5
 
-    mu_1, sigma_1 = _sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
-    mu_2, sigma_2 = _sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
+    mu_1, sigma_1 = sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
+    mu_2, sigma_2 = sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
 
     params = [[mu_1, sigma_1], [mu_2, sigma_2]]
 
@@ -217,13 +181,13 @@ def test_basic2():
         n2s_N = [n21, n22, n23, n24]
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n11, n12, n13, n14)
-    mu_1, sigma_1 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
+    mu_1, sigma_1 = sample_niw(mu_0, sigma_0, kappa_0, nu_0)
     print 'label 1 learned'
     print mu_1
     print sigma_1
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n21, n22, n23, n24)
-    mu_2, sigma_2 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
+    mu_2, sigma_2 = sample_niw(mu_0, sigma_0, kappa_0, nu_0)
     print 'label 2 learned'
     print mu_2
     print sigma_2
@@ -241,8 +205,8 @@ def test_basic3():
     kappa_0 = 0.5
     nu_0 = 5
 
-    mu_1, sigma_1 = _sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
-    mu_2, sigma_2 = _sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
+    mu_1, sigma_1 = sample_niw(mus_0[0], sigmas_0[0], kappa_0, nu_0)
+    mu_2, sigma_2 = sample_niw(mus_0[1], sigmas_0[1], kappa_0, nu_0)
 
     params = [[mu_1, sigma_1], [mu_2, sigma_2]]
 
@@ -347,13 +311,13 @@ def test_basic3():
     print A_sample
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n11, n12, n13, n14)
-    mu_1, sigma_1 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
+    mu_1, sigma_1 = sample_niw(mu_0, sigma_0, kappa_0, nu_0)
     print 'label 1 learned'
     print mu_1
     print sigma_1
 
     mu_0, sigma_0, kappa_0, nu_0 = natural_to_standard(n21, n22, n23, n24)
-    mu_2, sigma_2 = _sample_niw(mu_0, sigma_0, kappa_0, nu_0)
+    mu_2, sigma_2 = sample_niw(mu_0, sigma_0, kappa_0, nu_0)
     print 'label 2 learned'
     print mu_2
     print sigma_2
