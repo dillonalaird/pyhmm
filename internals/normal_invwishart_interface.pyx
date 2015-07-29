@@ -28,10 +28,11 @@ def meanfield_sgd_update(np.ndarray[np.double_t, ndim=2, mode='c'] nat_params_0 
                          np.ndarray[np.double_t, ndim=2, mode='c'] s3 not None,
                          np.double_t lrate, np.double_t bfactor):
     cdef int D = nat_params_0.shape[0] - 3
+    cdef np.ndarray[np.double_t, ndim=2, mode='c'] _nat_params_N = nat_params_N.copy()
     niw.meanfield_sgd_update[np.double_t](D, lrate, bfactor, &nat_params_0[0,0],
-                                          &nat_params_N[0,0], s1, &s2[0],
+                                          &_nat_params_N[0,0], s1, &s2[0],
                                           &s3[0,0])
-    return nat_params_N
+    return _nat_params_N
 
 
 def expected_log_likelihood(np.ndarray[np.double_t, ndim=2, mode='c'] obs not None,
