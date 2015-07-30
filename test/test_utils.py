@@ -1,6 +1,7 @@
 from __future__ import division
 from numpy.core.umath_tests import inner1d
 from scipy.special import digamma
+from scipy.stats import multivariate_normal as mnorm
 
 import numpy as np
 import scipy.linalg
@@ -111,3 +112,13 @@ def natural_to_standard(n1, n2, n3, n4):
     sigma_0 = n3 - kappa_0*np.outer(mu_0, mu_0)
     nu_0 = n4 - 2 - mu_0.shape[0]
     return mu_0, sigma_0, kappa_0, nu_0
+
+
+def generate_data(D, N, pi, A, params):
+    s = np.random.choice(D, 1, p=pi)[0]
+    obs = [mnorm.rvs(params[s][0], params[s][1])]
+    for i in xrange(N-1):
+        s = np.random.choice(2, 1, p=A[s,:])[0]
+        obs.append(mnorm.rvs(params[s][0], params[s][1]))
+
+    return np.array(obs)
