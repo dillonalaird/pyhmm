@@ -1,7 +1,6 @@
 from __future__ import division
-from scipy.stats import multivariate_normal as mnorm
 from matplotlib import pyplot as plt
-from test_utils import sample_niw, natural_to_standard
+from test_utils import sample_niw, natural_to_standard, generate_data
 
 import numpy as np
 import scipy.stats as stats
@@ -12,16 +11,6 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.par
 import forward_backward as fb
 import normal_invwishart as niw
 import dirichlet as dir
-
-
-def generate_data(D, N, pi, A, params):
-    s = np.random.choice(D, 1, p=pi)[0]
-    obs = [mnorm.rvs(params[s][0], params[s][1])]
-    for i in xrange(N-1):
-        s = np.random.choice(2, 1, p=A[s,:])[0]
-        obs.append(mnorm.rvs(params[s][0], params[s][1]))
-
-    return np.array(obs)
 
 
 def test_basic1():
