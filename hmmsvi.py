@@ -1,8 +1,15 @@
 from __future__ import division
+from scipy.special import digamma
 
 import numpy as np
 import forward_backward as fb
 import dirichlet as dir
+
+
+class MetaObs(object):
+    def __init__(self, i1, i2):
+        self.i1 = i1
+        self.i2 = i2
 
 
 class HMMSVI(object):
@@ -18,6 +25,8 @@ class HMMSVI(object):
         kappa : float
         """
 
+        # TODO: might have to add epsilon for certain calculations involving the
+        # transition matrix
         self.obs = obs
         self.A_nat_0 = A_0 - 1
         self.A_nat_N = self.A_nat_0.copy()
@@ -27,7 +36,7 @@ class HMMSVI(object):
         self.kappa = kappa
 
         self.T = obs.shape[0]
-        self.S = A_0.size()
+        self.S = A_0.shape[0]
 
     def infer(self, L, n, metaobs_fn, itr):
         metaobs_sz = 2*L + 1
@@ -38,6 +47,8 @@ class HMMSVI(object):
 
             A_inter = np.zeros_like(self.A_nat_N)
             emits_inter = [emit.zero_nat_params() for emit in self.emits]
+
+            minibatches = metaobs_fn(self.T, L, metaobs_sz)
 
             for mb in minibatches:
                 s_obs = self.obs[mb.i1:(mb.i2+1)]
@@ -52,11 +63,12 @@ class HMMSVI(object):
             self.global_update(L, lrate, A_inter, emits_inter)
 
     def local_update(self, obs, pi):
+        pi_mod = digamma(pi) - digamma(np.sum(pi))
         A_mod = np.exp(dir.expected_sufficient_statistics(self.A_nat_N + 1))
         elliks = np.array([emit.expected_log_likelihood(obs)
                            for emit in self.emits])
 
-        lalpha = fb.forward_msgs(pi, A_mod, elliks)
+        lalpha = fb.forward_msgs(pi_mod, A_mod, elliks)
         lbeta  = fb.backward_msgs(A_mod, elliks)
 
         # TODO: encapsulate this more
@@ -88,7 +100,16 @@ class HMMSVI(object):
 
 
     def _calc_pi(self):
-        A_mean = (self.A_nat_N + 1)/np.sum(self.A_nat_N + 1, axis=1)
-        ew, ev = np.linalg.eigen(A_mean.T)
+        # This looks incorrect
+        A_mean = (self.A_nat_N)/np.sum(self.A_nat_N, axis=1)
+        ew, ev = np.linalg.eig(A_mean.T)
         ew_dec = np.argsort(ew)[::-1]
         return np.abs(ev[:,ew_dec[0]])
+
+    @staticmethod
+    def metaobs_unif(T, L, n):
+        ll = L
+        uu = T - 1 - L
+
+        c_vec = np.random.randint(ll, uu+1, n)
+        return [MetaObs(c-L,c+L) for c in c_vec]
