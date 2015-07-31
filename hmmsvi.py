@@ -93,8 +93,9 @@ class HMMSVI(object):
         A_inter  = dir.sufficient_statistics(var_x)
         A_inter -= 1
 
-        emits_inter = np.array([list(emit.expected_sufficient_statistics(obs, var_x[:,i]))
-                                for i, emit in enumerate(self.emits)])
+        emits_inter = [list(emit.expected_sufficient_statistics(obs,
+                            var_x[:,i].copy(order='C')))
+                       for i, emit in enumerate(self.emits)]
 
         return A_inter, emits_inter
 
