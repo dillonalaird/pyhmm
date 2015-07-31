@@ -51,7 +51,7 @@ class HMMSVI(object):
             minibatches = metaobs_fn(self.T, L, metaobs_sz)
 
             for mb in minibatches:
-                s_obs = self.obs[mb.i1:(mb.i2+1)]
+                s_obs = self.obs[mb.i1:(mb.i2+1),:]
                 pi = self._calc_pi()
                 var_x = self.local_update(s_obs, pi)
                 A_i, emits_i = self.intermediate_pars(s_obs, var_x)
@@ -63,10 +63,10 @@ class HMMSVI(object):
             self.global_update(L, lrate, A_inter, emits_inter)
 
     def local_update(self, obs, pi):
-        pi_mod = digamma(pi) - digamma(np.sum(pi))
-        A_mod = np.exp(dir.expected_sufficient_statistics(self.A_nat_N + 1))
+        pi_mod = np.exp(digamma(pi) - digamma(np.sum(pi)))
+        A_mod = np.exp(np.exp(dir.expected_sufficient_statistics(self.A_nat_N + 1)))
         elliks = np.array([emit.expected_log_likelihood(obs)
-                           for emit in self.emits])
+                           for emit in self.emits]).T.copy(order='C')
 
         lalpha = fb.forward_msgs(pi_mod, A_mod, elliks)
         lbeta  = fb.backward_msgs(A_mod, elliks)
