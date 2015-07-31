@@ -57,8 +57,9 @@ class HMMSVI(object):
                 A_i, emits_i = self.intermediate_pars(s_obs, var_x)
 
                 A_inter += A_i
-                for s in xrange(emits_i.shape[0]):
-                    emits_inter[s] += emits_i[s]
+                for i in xrange(len(emits_i)):
+                    for j in xrange(len(emits_i[i])):
+                        emits_inter[i][j] += emits_i[i][j]
 
             self.global_update(L, lrate, A_inter, emits_inter)
 
