@@ -13,6 +13,10 @@ class NormalInvWishart(object):
     def expected_sufficient_statistics(self, obs, expected_states):
         return niw.expected_sufficient_statistics(obs, expected_states)
 
+    def expected_log_likelihood(self, obs):
+        return niw.expected_log_likelihood(obs, self.mu_0, self.sigma_0,
+                                           self.kappa_0, self.nu_0)
+
     # TODO: clean this up, move to normal_invwishart_interface.pyx
     def meanfield_sgd_update(self, ess, lrate, bfactor):
         nat_params_0 = self.shape_nat_params(*self.standard_to_natural(
@@ -26,7 +30,7 @@ class NormalInvWishart(object):
 
     def zero_nat_params(self):
         D = self.D
-        return np.array([np.zeros(D), 0., np.zeros((D,D)), 0.])
+        return [0., np.zeros(D), np.zeros((D,D))]
 
     def standard_to_natural(self, mu, sigma, kappa, nu):
         n1 = kappa*mu
