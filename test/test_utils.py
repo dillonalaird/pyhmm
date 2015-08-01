@@ -117,8 +117,10 @@ def natural_to_standard(n1, n2, n3, n4):
 def generate_data(D, N, pi, A, params):
     s = np.random.choice(D, 1, p=pi)[0]
     obs = [mnorm.rvs(params[s][0], params[s][1])]
+    sts = [s]
     for i in xrange(N-1):
         s = np.random.choice(2, 1, p=A[s,:])[0]
         obs.append(mnorm.rvs(params[s][0], params[s][1]))
+        sts.append(s)
 
-    return np.array(obs)
+    return np.array(obs), np.array(sts)
