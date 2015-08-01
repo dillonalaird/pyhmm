@@ -21,7 +21,7 @@ def test_basic1():
     sigmas = np.array([np.eye(2), 2.*np.eye(2)])
     params = [[mus[0], sigmas[0]], [mus[1], sigmas[1]]]
 
-    obs = generate_data(D, N, pi, A, params)
+    obs, sts = generate_data(D, N, pi, A, params)
 
     A_0 = 2*np.ones((2,2))
     emits = [NIW(np.ones(2), np.eye(2), 0.5, 5),
@@ -29,7 +29,7 @@ def test_basic1():
     hmm = HMMSVI(obs, A_0, emits, 1., 0.7)
     hmm.infer(10, 10, HMMSVI.metaobs_unif, 20)
 
-    print 'stop'
+    var_x = hmm.full_local_update()
 
 
 if __name__ == '__main__':

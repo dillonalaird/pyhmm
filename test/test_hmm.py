@@ -37,7 +37,7 @@ def test_basic1():
 
     params = [[mu_1, sigma_1], [mu_2, sigma_2]]
 
-    obs = generate_data(D, N, pi, A, params)
+    obs, _ = generate_data(D, N, pi, A, params)
 
     n1s = [kappa_0*mus_0[0],
            kappa_0,
@@ -103,7 +103,7 @@ def test_basic2():
 
     params = [[mu_1, sigma_1], [mu_2, sigma_2]]
 
-    obs = generate_data(D, N, pi, A, params)
+    obs, _ = generate_data(D, N, pi, A, params)
 
     plt.scatter(obs[:,0], obs[:,1])
     plt.show()
@@ -199,7 +199,7 @@ def test_basic3():
 
     params = [[mu_1, sigma_1], [mu_2, sigma_2]]
 
-    obs = generate_data(D, N, pi, A, params)
+    obs, _ = generate_data(D, N, pi, A, params)
 
     #plt.scatter(obs[:,0], obs[:,1])
     #plt.show()
@@ -313,6 +313,6 @@ def test_basic3():
 
 
 if __name__ == '__main__':
-    #test_basic1()
-    #test_basic2()
+    test_basic1()
+    test_basic2()
     test_basic3()
