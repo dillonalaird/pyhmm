@@ -168,6 +168,22 @@ namespace niw {
         n4 += s1;
     }
 
+    /*
+     * Calculates the stochastic gradient descent meanfield update.
+     *
+     * D       - The dimension of the data.
+     * lrate   - The learning rate.
+     * bfactor - The batch factor.
+     *
+     * nat_params_0 - The prior natural parameters.
+     * nat_params_N - The natural parameters
+     *
+     * The sufficient statistics.
+     *
+     * s1_ - \sum_{i=1}^N w_i
+     * s2_ - \sum_{i=1}^N w_i*x_i
+     * s3_ - \sum_{i=1}^N w_i(x_i*x_i^T)
+     */
     template <typename Type>
     void meanfield_sgd_update(int D, Type lrate, Type bfactor,
                               Type* nat_params_0, Type* nat_params_N,
