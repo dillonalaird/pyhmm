@@ -68,7 +68,7 @@ class HMMSVI(object):
 
     def local_update(self, obs, pi):
         pi_mod = np.exp(digamma(pi + eps) - digamma(np.sum(pi + eps)))
-        A_mod = np.exp(np.exp(dir.expected_sufficient_statistics(self.A_nat_N + 1)))
+        A_mod = np.exp(dir.expected_sufficient_statistics(self.A_nat_N + 1))
         elliks = np.array([emit.expected_log_likelihood(obs)
                            for emit in self.emits]).T.copy(order='C')
 
