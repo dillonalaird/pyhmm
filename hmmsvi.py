@@ -6,6 +6,9 @@ import forward_backward as fb
 import dirichlet as dir
 
 
+eps = 1e-9
+
+
 class MetaObs(object):
     def __init__(self, i1, i2):
         self.i1 = i1
@@ -64,7 +67,7 @@ class HMMSVI(object):
             self.global_update(L, lrate, A_inter, emits_inter)
 
     def local_update(self, obs, pi):
-        pi_mod = np.exp(digamma(pi) - digamma(np.sum(pi)))
+        pi_mod = np.exp(digamma(pi + eps) - digamma(np.sum(pi + eps)))
         A_mod = np.exp(np.exp(dir.expected_sufficient_statistics(self.A_nat_N + 1)))
         elliks = np.array([emit.expected_log_likelihood(obs)
                            for emit in self.emits]).T.copy(order='C')
@@ -100,6 +103,9 @@ class HMMSVI(object):
 
         return A_inter, emits_inter
 
+    def full_local_update(self):
+        pi = self._calc_pi()
+        return self.local_update(self.obs, pi)
 
     def _calc_pi(self):
         # This looks incorrect
