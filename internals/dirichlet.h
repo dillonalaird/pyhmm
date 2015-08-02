@@ -15,6 +15,8 @@ namespace dir {
     using namespace nptypes;
     using namespace eigentypes;
 
+    static const constexpr double eps = 0.000000001;
+
     /*
      * Calculates the expected sufficient statistics.
      *
@@ -33,8 +35,8 @@ namespace dir {
         VectorXt<Type> row_sums = e_alphas.rowwise().sum();
         for (int i = 0; i < S; ++i) {
             for (int j = 0; j < S; ++j) {
-                e_ess(i,j) = math::digamma(e_alphas.coeff(i,j)) - \
-                             math::digamma(row_sums.coeff(i));
+                e_ess(i,j) = math::digamma(e_alphas.coeff(i,j) + eps) - \
+                             math::digamma(row_sums.coeff(i) + eps);
             }
         }
     }
