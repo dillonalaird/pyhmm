@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 
 from test_utils import sample_invwishart
-from hmmsvi import HMMSVI
+from pyhmmsvi import HMMSVI
 from normal_inverse_wishart import NormalInvWishart as NIW
 
 import numpy as np
