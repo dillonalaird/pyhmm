@@ -3,6 +3,7 @@
 
 #include <Eigen/Core>
 #include "np_types.h"
+#include "normal_invwishart.h"
 
 
 namespace hmmsvi {
@@ -15,6 +16,10 @@ namespace hmmsvi {
         NPArray<Type> e_obs(obs, T, S);
         NPMatrix<Type> A_nat_0(A_0, S, S);
         //A_nat_0 -= 1;
+
+        std::vector<niw::nat_params<Type> > nat_params;
+        for (int s = 0; s < S; ++s)
+            nat_params.push_back(niw::convert_to_struct(emits, D, s));
     }
 
     void local_update() { }
