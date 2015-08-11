@@ -14,11 +14,14 @@ def infer(np.ndarray[np.double_t, ndim=2, mode='c'] obs,
     cdef np.ndarray[np.double_t, ndim=1, mode='c'] _emits = np.zeros(S*(D*D + 3*D))
 
     cdef int s = 0
-    cdef int offset = D*D + 3*D
+    cdef int offset1 = D*D + 3*D
+    cdef int offset2 = D + 3
     for s in range(S):
-        _emits[(s*offset):(s*offset + D*D)] = emits[:D,:D].flatten().copy(order='C')
-        _emits[(s*offset + D*D):(s*offset + D*D + D)] = emits[D,:].flatten().copy(order='C')
-        _emits[(s*offset + D*D + 2*D)] = emits[D+1,0]
-        _emits[(s*offset + D*D + 3*D)] = emits[D+2,0]
+        _emits[(s*offset1):(s*offset1 + D*D)] = \
+                emits[(s*offset2):(s*offset2 + D)].flatten().copy(order='C')
+        _emits[(s*offset1 + D*D):(s*offset1 + D*D + D)] = \
+                emits[(s*offset2 + D),:].flatten().copy(order='C')
+        _emits[(s*offset1 + D*D + D)] = emits[(s*offset2 + D + 1),0]
+        _emits[(s*offset1 + D*D + 2*D)] = emits[(s*offset2 + D + 2),0]
     hmmsvi.infer[np.double_t](D, S, T, &obs[0,0], &A_0[0,0], &emits[0,0],
                               tau, kappa, L, n, itr)
