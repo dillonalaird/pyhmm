@@ -17,16 +17,22 @@ namespace hmmsvi {
     using namespace eigentypes;
 
     template <typename Type>
-    void infer(int D, int S, int T, Type* obs, Type* A_0, Type* emits,
-               Type tau, Type kappa, int L, int n, int itr) {
+    void infer(int D, int S, int T, Type* obs, Type* A_0, Type* A_N,
+               Type* emits_0, Type* emits_N, Type tau, Type kappa, int L, int n,
+               int itr) {
         // pass in init and nat params?
         NPArray<Type> e_obs(obs, T, S);
         NPMatrix<Type> A_nat_0(A_0, S, S);
         A_nat_0 -= MatrixXt<Type>::Ones(S, S);
+        NPMatrix<Type> A_nat_N(A_N, S, S);
+        A_nat_N -= MatrixXt<Type>::Ones(S, S);
 
-        std::vector<niw::nat_params<Type> > nat_params;
+        std::vector<niw::nat_params<Type> > nat_params_0;
         for (int s = 0; s < S; ++s)
-            nat_params.push_back(niw::convert_to_struct(emits, D, s));
+            nat_params_0.push_back(niw::convert_to_struct(emits_0, D, s));
+        std::vector<niw::nat_params<Type> > nat_params_N;
+        for (int s = 0; s < S; ++S)
+            nat_params_N.push_back(niw::convert_to_struct(emits_N, D, s));
 
         Type lrate = 0.0;
         for (int it = 0; it < itr; ++it) {
@@ -39,7 +45,7 @@ namespace hmmsvi {
                 emit_inter.push_back(niw::convert_to_struct(emits_inter_buff, D, s));
 
             for (int mit = 0; mit < n; ++mit) {
-                mo::metaobs = mo::metaobs_unif(T, L);
+                mo::metaobs m = mo::metaobs_unif(T, L);
             }
         }
     }
@@ -50,7 +56,10 @@ namespace hmmsvi {
 
     void intermediate_pars() { }
 
-    void _calc_pi() { }
+    template <typename Type>
+    VectorXt<Type> _calc_pi(NPMatrix<Type> A_nat_N) {
+        return NULL;
+    }
 }
 
 
