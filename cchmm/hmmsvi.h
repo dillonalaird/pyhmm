@@ -5,6 +5,7 @@
 #include <cmath>
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 #include "np_types.h"
 #include "eigen_types.h"
 #include "metaobs.h"
@@ -15,6 +16,20 @@ namespace hmmsvi {
     using namespace Eigen;
     using namespace nptypes;
     using namespace eigentypes;
+
+    template <typename Type>
+    VectorXt<Type> _calc_pi(const NPMatrix<Type>& A_nat_N) {
+        // can't use NPMatrix<Type> as type
+        EigenSolver<MatrixXt<Type> > es(A_nat_N);
+        VectorXcd evals = es.eigenvalues();
+
+        int argmax = 0;
+        for (int i = 0; i < evals.size(); ++i)
+            if (evals(i).real() > evals(argmax).real()) argmax = i;
+
+        return es.eigenvectors().col(argmax).real().cwiseAbs();
+    }
+
 
     template <typename Type>
     void infer(int D, int S, int T, Type* obs, Type* A_0, Type* A_N,
@@ -46,6 +61,7 @@ namespace hmmsvi {
 
             for (int mit = 0; mit < n; ++mit) {
                 mo::metaobs m = mo::metaobs_unif(T, L);
+                VectorXt<Type> pi = _calc_pi<Type>(A_nat_N);
             }
         }
     }
@@ -55,11 +71,6 @@ namespace hmmsvi {
     void global_update() { }
 
     void intermediate_pars() { }
-
-    template <typename Type>
-    VectorXt<Type> _calc_pi(NPMatrix<Type> A_nat_N) {
-        return NULL;
-    }
 }
 
 
