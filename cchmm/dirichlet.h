@@ -15,6 +15,13 @@ namespace dir {
 
     static const constexpr double eps = 0.000000001;
 
+    /*
+     * Calculates the expected sufficient statistics.
+     *
+     * A - The dirichlet parameters.
+     *
+     * ess - \psi(\alpha_{i,j}) - \psi(\sum_{j=1}^S \alpha_{i,j})
+     */
     template <typename Type>
     MatrixXt<Type> expected_sufficient_statistics(const MatrixXt<Type>& A) {
         MatrixXt<Type> ess = MatrixXt<Type>::Zero(A.size(), A.size());
