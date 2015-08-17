@@ -10,9 +10,11 @@
 #include "eigen_types.h"
 #include "metaobs.h"
 #include "normal_invwishart.h"
+#include "dirichlet.h"
 
 
 namespace hmmsvi {
+    using namespace mo;
     using namespace Eigen;
     using namespace nptypes;
     using namespace eigentypes;
@@ -30,6 +32,13 @@ namespace hmmsvi {
         return es.eigenvectors().col(argmax).real().cwiseAbs();
     }
 
+    template <typename Type>
+    void local_update(const ArrayXt<Type>& obs, const VectorXt<Type>& pi,
+                      const NPMatrix<Type>& A_nat_N,
+                      const std::vector<niw::nat_params<Type> >& emits_N) {
+        MatrixXt<Type> A = A_nat_N + MatrixXt<Type>::Ones(A_nat_N.size(), A_nat_N.size());
+        MatrixXt<Type> A_mod = dir::expected_sufficient_statistics<Type>(A);
+    }
 
     template <typename Type>
     void infer(int D, int S, int T, Type* obs, Type* A_0, Type* A_N,
@@ -60,13 +69,14 @@ namespace hmmsvi {
                 emit_inter.push_back(niw::convert_to_struct(emits_inter_buff, D, s));
 
             for (int mit = 0; mit < n; ++mit) {
-                mo::metaobs m = mo::metaobs_unif(T, L);
+                metaobs m = metaobs_unif(T, L);
                 VectorXt<Type> pi = _calc_pi<Type>(A_nat_N);
+
+                ArrayXt<Type> obs_sub = e_obs.block(m.i1, 0, m.i2, 2);
+                local_update(obs_sub, pi, A_nat_N, nat_params_N);
             }
         }
     }
-
-    void local_update() { }
 
     void global_update() { }
 
