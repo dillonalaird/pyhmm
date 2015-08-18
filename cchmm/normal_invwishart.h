@@ -1,5 +1,5 @@
-#ifndef normal_invwishart_h
-#define normal_invwishart_h
+#ifndef NORMAL_INVWISHART_H
+#define NORMAL_INVWISHART_H
 
 #include <Eigen/Core>
 #include <boost/math/special_functions/digamma.hpp>
