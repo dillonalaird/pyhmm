@@ -10,12 +10,12 @@
 #include "np_types.h"
 #include "eigen_types.h"
 #include "metaobs.h"
+#include "forward_backward_msgs.h"
 #include "normal_invwishart.h"
 #include "dirichlet.h"
 
 
 namespace hmmsvi {
-    using namespace mo;
     using namespace boost;
     using namespace Eigen;
     using namespace nptypes;
@@ -50,7 +50,12 @@ namespace hmmsvi {
             pi_mod(i) = math::digamma(pi(i) + eps) - sum;
         pi_mod = pi_mod.array().exp().matrix();
 
-        niw::expected_log_likelihood(obs, emits_N[0]);
+        ArrayXt<Type> elliks = ArrayXt<Type>::Zero(obs.rows(), emits_N.size());
+        for (int i = 0; i < emits_N.size(); ++i)
+            elliks.block(0, i, elliks.rows(), 1) = niw::expected_log_likelihood(obs, emits_N[i]);
+
+        ArrayXt<Type> lalpha = fb::forward_msgs(elliks, pi_mod, A_mod);
+        ArrayXt<Type> lbeta  = fb::backward_msgs(elliks, A_mod);
     }
 
     template <typename Type>
@@ -82,7 +87,7 @@ namespace hmmsvi {
                 emit_inter.push_back(niw::convert_to_struct(emits_inter_buff, D, s));
 
             for (int mit = 0; mit < n; ++mit) {
-                metaobs m = metaobs_unif(T, L);
+                mo::metaobs m = mo::metaobs_unif(T, L);
                 VectorXt<Type> pi = _calc_pi<Type>(A_nat_N);
 
                 ArrayXt<Type> obs_sub = e_obs.block(m.i1, 0, m.i2, 2);
