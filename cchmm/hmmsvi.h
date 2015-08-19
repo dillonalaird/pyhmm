@@ -37,7 +37,7 @@ namespace hmmsvi {
     }
 
     template <typename Type>
-    void local_update(const ArrayXt<Type>& obs, const VectorXt<Type>& pi,
+    ArrayXt<Type> local_update(const ArrayXt<Type>& obs, const VectorXt<Type>& pi,
                       const NPMatrix<Type>& A_nat_N,
                       const std::vector<niw::mo_params<Type> >& emits_N) {
         MatrixXt<Type> A = A_nat_N + MatrixXt<Type>::Ones(A_nat_N.size(), A_nat_N.size());
@@ -56,6 +56,14 @@ namespace hmmsvi {
 
         ArrayXt<Type> lalpha = fb::forward_msgs(elliks, pi_mod, A_mod);
         ArrayXt<Type> lbeta  = fb::backward_msgs(elliks, A_mod);
+
+        ArrayXt<Type> es = fb::expected_states(lalpha, lbeta);
+        es = es.exp();
+        ArrayXt<Type> row_sums = es.rowwise().sum();
+        for (int i = 0; i < es.rows(); ++i)
+            es.row(i) = es.row(i)/row_sums.row(i).coeff(0);
+
+        return es;
     }
 
     template <typename Type>
@@ -91,7 +99,7 @@ namespace hmmsvi {
                 VectorXt<Type> pi = _calc_pi<Type>(A_nat_N);
 
                 ArrayXt<Type> obs_sub = e_obs.block(m.i1, 0, m.i2, 2);
-                local_update(obs_sub, pi, A_nat_N, nat_params_N);
+                ArrayXt<Type> var_x = local_update(obs_sub, pi, A_nat_N, nat_params_N);
             }
         }
     }
