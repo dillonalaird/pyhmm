@@ -31,7 +31,7 @@ namespace fb {
 
     template <typename Type>
     ArrayXt<Type> backward_msgs(const ArrayXt<Type>& lliks,
-                               const MatrixXt<Type>& A) {
+                                const MatrixXt<Type>& A) {
         ArrayXt<Type> lbeta = ArrayXt<Type>::Zero(lliks.rows(), lliks.cols());
 
         Type thesum_buf[lliks.cols()] __attribute__((aligned(16)));
@@ -45,6 +45,21 @@ namespace fb {
         }
 
         return lbeta;
+    }
+
+    template <typename Type>
+    ArrayXt<Type> expected_states(const ArrayXt<Type>& lalpha,
+                                  const ArrayXt<Type>& lbeta) {
+        ArrayXt<Type> expected_states = ArrayXt<Type>::Zero(lalpha.rows(), lalpha.cols());
+        Type cmax;
+        for (int t = 0; t < lalpha.rows() - 1; ++t) {
+            cmax = (lalpha.row(t) + lbeta.row(t)).maxCoeff();
+            expected_states.row(t) = (lalpha.row(t) + lbeta.row(t)) - cmax;
+        }
+        cmax = lalpha.row(lalpha.rows()-1).maxCoeff();
+        expected_states.row(lalpha.rows()-1) = lalpha.row(lalpha.rows()-1) - cmax;
+
+        return expected_states;
     }
 }
 
