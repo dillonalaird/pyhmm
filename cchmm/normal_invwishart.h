@@ -26,6 +26,13 @@ namespace niw {
     };
 
     template <typename T>
+    struct e_suff_stats {
+        T s1;
+        ArrayXt<T> s2;
+        MatrixXt<T> s3;
+    };
+
+    template <typename T>
     mo_params<T> convert_to_struct(T* mo_params_raw, int D, int s) {
         int offset = (D*D + 3*D);
         return mo_params<T>{D,
@@ -70,6 +77,23 @@ namespace niw {
         }
 
         return rs;
+    }
+
+    template <typename Type>
+    e_suff_stats<Type> expected_sufficient_statistics(const ArrayXt<Type>& obs,
+                                                      const ArrayXt<Type>& es) {
+        Type s1           = 0.0;
+        ArrayXt<Type> s2  = ArrayXt<Type>::Zero(obs.cols(), 1);
+        MatrixXt<Type> s3 = MatrixXt<Type>::Zero(obs.cols(), obs.cols());
+
+        for (int i = 0; i < obs.rows(); ++i) {
+            s1 += es.coeff(i);
+            s2 += obs.row(i)*es.coeff(i);
+            s3 += obs.row(i).matrix().transpose()*obs.row(i).matrix()*es.coeff(i);
+        }
+
+        e_suff_stats<Type> ess = {s1, s2, s3};
+        return ess;
     }
 }
 

@@ -34,6 +34,16 @@ namespace dir {
 
         return ess;
     }
+
+    template <typename Type>
+    MatrixXt<Type> sufficient_statistics(const ArrayXt<Type>& es) {
+        MatrixXt<Type> ss = MatrixXt<Type>::Zero(es.cols(), es.cols());
+
+        for (int i = 1; i < es.rows(); ++i)
+            ss += es.row(i-1).matrix().transpose()*es.row(i).matrix();
+
+        return ss;
+    }
 }
 
 
