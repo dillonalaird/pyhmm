@@ -37,8 +37,9 @@ namespace hmmsvi {
     }
 
     template <typename Type>
-    void global_update(int L, Type lrate, const MatrixXt<Type>& A_inter,
-                       const std::vector<niw::mo_params<Type> >& emits_inter) { }
+    void global_update(int T, int L, Type lrate, const MatrixXt<Type>& A_inter,
+                       const std::vector<niw::e_suff_stats<Type> >& emits_inter) {
+    }
 
     template <typename Type>
     ArrayXt<Type> local_update(const ArrayXt<Type>& obs,
@@ -82,29 +83,28 @@ namespace hmmsvi {
         NPMatrix<Type> A_nat_N(A_N, S, S);
         A_nat_N -= MatrixXt<Type>::Ones(S, S);
 
-        std::vector<niw::mo_params<Type> > nat_params_0;
+        std::vector<niw::mo_params<Type> > emits_mo_0;
         for (int s = 0; s < S; ++s)
-            nat_params_0.push_back(niw::convert_to_struct(emits_0, D, s));
-        std::vector<niw::mo_params<Type> > nat_params_N;
+            emits_mo_0.push_back(niw::convert_to_struct(emits_0, D, s));
+        std::vector<niw::mo_params<Type> > emits_mo_N;
         for (int s = 0; s < S; ++s)
-            nat_params_N.push_back(niw::convert_to_struct(emits_N, D, s));
+            emits_mo_N.push_back(niw::convert_to_struct(emits_N, D, s));
 
         Type lrate = 0.0;
         for (int it = 0; it < itr; ++it) {
             lrate = pow(it + tau, -1*kappa);
 
             MatrixXt<Type> A_inter = MatrixXt<Type>::Zero(S, S);
-            Type emits_inter_buff[S*(D*D + 3*D)] __attribute__((aligned(16))) = {};
-            std::vector<niw::mo_params<Type> > emits_inter;
+            std::vector<niw::e_suff_stats<Type> > emits_inter;
             for (int s = 0; s < S; ++s)
-                emits_inter.push_back(niw::convert_to_struct(emits_inter_buff, D, s));
+                emits_inter.push_back(niw::create_zero_ss<Type>(D));
 
             for (int mit = 0; mit < n; ++mit) {
                 mo::metaobs m = mo::metaobs_unif(T, L);
                 VectorXt<Type> pi = _calc_pi<Type>(A_nat_N);
 
                 ArrayXt<Type> obs_sub = e_obs.block(m.i1, 0, m.i2, 2);
-                ArrayXt<Type> var_x = local_update(obs_sub, pi, A_nat_N, nat_params_N);
+                ArrayXt<Type> var_x = local_update(obs_sub, pi, A_nat_N, emits_mo_N);
 
                 // intermediate parameters
                 MatrixXt<Type> A_i = dir::sufficient_statistics(var_x);
@@ -114,6 +114,9 @@ namespace hmmsvi {
                 for (int s = 0; s < S; ++s) {
                     niw::e_suff_stats<Type> emit_i =  \
                         niw::expected_sufficient_statistics(obs_sub, var_x);
+                    emits_inter[s].s1 += emit_i.s1;
+                    emits_inter[s].s2 += emit_i.s2;
+                    emits_inter[s].s3 += emit_i.s3;
                 }
             }
         }
