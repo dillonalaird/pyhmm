@@ -37,7 +37,10 @@ namespace hmmsvi {
     }
 
     template <typename Type>
-    void global_update(int T, int L, Type lrate, const MatrixXt<Type>& A_inter,
+    void global_update(int T, int L, Type lrate,
+                       const MatrixXt<Type>& A_0,
+                       const MatrixXt<Type>& A_N,
+                       const MatrixXt<Type>& A_inter,
                        const std::vector<niw::e_suff_stats<Type> >& emits_inter) {
     }
 
@@ -46,7 +49,7 @@ namespace hmmsvi {
                                const VectorXt<Type>& pi,
                                const NPMatrix<Type>& A_nat_N,
                                const std::vector<niw::mo_params<Type> >& emits_N) {
-        MatrixXt<Type> A = A_nat_N + MatrixXt<Type>::Ones(A_nat_N.size(), A_nat_N.size());
+        MatrixXt<Type> A = A_nat_N + MatrixXt<Type>::Ones(A_nat_N.rows(), A_nat_N.cols());
         MatrixXt<Type> A_mod = dir::expected_sufficient_statistics<Type>(A);
         A_mod = A_mod.array().exp().matrix();
 
@@ -119,6 +122,11 @@ namespace hmmsvi {
                     emits_inter[s].s3 += emit_i.s3;
                 }
             }
+
+            // global update
+            int B = 2*L + 1;
+            Type A_bfactor = (T - 2*L - 1)/(2*L*B);
+            dir::meanfield_sgd_update(lrate, A_bfactor, A_nat_0, A_nat_N, A_inter);
         }
     }
 }
