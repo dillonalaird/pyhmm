@@ -33,6 +33,16 @@ namespace niw {
     };
 
     template <typename T>
+    e_suff_stats<T> create_zero_ss(int D) {
+        T s1 = 0.0;
+        ArrayXt<T> s2 = ArrayXt<T>::Zero(D, 1);
+        MatrixXt<T> s3 = MatrixXt<T>::Zero(D, D);
+
+        e_suff_stats<T> ess = {s1, s2, s3};
+        return ess;
+    }
+
+    template <typename T>
     mo_params<T> convert_to_struct(T* mo_params_raw, int D, int s) {
         int offset = (D*D + 3*D);
         return mo_params<T>{D,
