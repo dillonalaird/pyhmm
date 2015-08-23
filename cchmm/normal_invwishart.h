@@ -17,12 +17,28 @@ namespace niw {
     static const constexpr double log2pi = 1.83787706640934533908193770912475883;
 
     template <typename T>
-    struct mo_params {
+    struct map_mo_params {
         int D;
         T* sigma_N;
         T* mu_N;
         T* kappa_N;
         T* nu_N;
+    };
+
+    template <typename T>
+    struct mo_params {
+        MatrixXt<T> sigma;
+        VectorXt<T> mu;
+        T kappa;
+        T nu;
+    };
+
+    template <typename T>
+    struct nat_params {
+        VectorXt<T> n1;
+        T n2;
+        MatrixXt<T> n3;
+        T n4;
     };
 
     template <typename T>
@@ -43,13 +59,38 @@ namespace niw {
     }
 
     template <typename T>
-    mo_params<T> convert_to_struct(T* mo_params_raw, int D, int s) {
+    map_mo_params<T> convert_to_struct(T* map_mo_params_raw, int D, int s) {
         int offset = (D*D + 3*D);
-        return mo_params<T>{D,
-                            &mo_params_raw[s*offset],
-                            &mo_params_raw[s*offset + D*D],
-                            &mo_params_raw[s*offset + D*D + D],
-                            &mo_params_raw[s*offset + D*D + 2*D]};
+        return map_mo_params<T>{D,
+                                &map_mo_params_raw[s*offset],
+                                &map_mo_params_raw[s*offset + D*D],
+                                &map_mo_params_raw[s*offset + D*D + D],
+                                &map_mo_params_raw[s*offset + D*D + 2*D]};
+    }
+
+    template <typename T>
+    nat_params<T> convert_mo_to_nat(const map_mo_params<T>& params) {
+        int D = params.D;
+        NPMatrix<T> sigma(params.sigma_N, D, D);
+        NPVector<T> mu(params.mu_N, D, 1);
+        T& kappa = *(params.kappa_N);
+        T& nu = *(params.nu_N);
+
+        VectorXt<T> n1 = kappa*mu;
+        T n2 = kappa;
+        MatrixXt<T> n3 = sigma + kappa*(mu*mu.transpose());
+        T n4 = nu + 2 + mu.size();
+
+        return nat_params<T>{n1, n2, n3, n4};
+    }
+
+    template <typename T>
+    map_mo_params<T> convert_nat_to_mo(const nat_params<T>& params) {
+        T& kappa = params.n2;
+        VectorXt<T> mu = params.n1/params.n2;
+        MatrixXt<T> sigma = params.n3 - kappa*(mu*mu.transpose());
+        T& nu = params.n4 - 2 - mu.size();
+        return map_mo_params<T>{mu.size(), &sigma.data(), &mu.data(), kappa, nu};
     }
 
     template <typename Type>
@@ -65,7 +106,7 @@ namespace niw {
 
     template <typename Type>
     ArrayXt<Type> expected_log_likelihood(const ArrayXt<Type>& obs,
-                                          const mo_params<Type>& params) {
+                                          const map_mo_params<Type>& params) {
         ArrayXt<Type> rs = ArrayXt<Type>::Zero(obs.rows(), 1);
 
         int D = params.D;
@@ -104,6 +145,26 @@ namespace niw {
 
         e_suff_stats<Type> ess = {s1, s2, s3};
         return ess;
+    }
+
+    template <typename Type>
+    void meanfield_sgd_update(Type lrate, Type bfactor,
+                              const map_mo_params<Type>& emit_mo_0,
+                              const map_mo_params<Type>& emit_mo_N,
+                              const e_suff_stats<Type>& ess) {
+        nat_params<Type> emit_nat_0 = convert_mo_to_nat<Type>(emit_mo_0);
+        nat_params<Type> emit_nat_N = convert_mo_to_nat<Type>(emit_mo_N);
+
+        emit_nat_N.n1 = (1 - lrate)*emit_nat_N.n1 + \
+                        lrate*(emit_nat_0.n1 + bfactor*ess.s2.matrix());
+        emit_nat_N.n2 = (1 - lrate)*emit_nat_N.n2 + \
+                        lrate*(emit_nat_0.n2 + bfactor*ess.s1);
+        emit_nat_N.n3 = (1 - lrate)*emit_nat_N.n3 + \
+                        lrate*(emit_nat_0.n3 + bfactor*ess.s3);
+        emit_nat_N.n4 = (1 - lrate)*emit_nat_N.n4 + \
+                        lrate*(emit_nat_0.n4 + bfactor*ess.s1);
+
+        //map_mo_params<Type> = emit_mo_N_up = convert_nat_to_mo<Type>
     }
 }
 
