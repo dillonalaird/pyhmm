@@ -104,6 +104,15 @@ namespace niw {
         return sum + D*log2 + log_sigma_det;
     }
 
+    /*
+     * Calculates the expected log likelihood (or responsibilities) for 
+     * variational normal-inverse-Wishart distribution.
+     *
+     * obs    - The observations.
+     * params - The moment parameters.
+     *
+     * Notes: See Bishop chapter 10.2.
+     */
     template <typename Type>
     ArrayXt<Type> expected_log_likelihood(const ArrayXt<Type>& obs,
                                           const map_mo_params<Type>& params) {
@@ -130,6 +139,19 @@ namespace niw {
         return rs;
     }
 
+    /*
+     * Calculates the sufficient statistics for a normal-inverse-Wishart
+     * distribution.
+     *
+     * obs - The observations.
+     * es  - An N x 1 array representing the expected value for a given state.
+     *
+     * Weighted sufficient statistics.
+     *
+     * s1 - \sum_{i=1}^N w_i
+     * s2 - \sum_{i=1}^N w_i*x_i
+     * s3 - \sum_{i=1}^N w_i(x_i*x_i^T)
+     */
     template <typename Type>
     e_suff_stats<Type> expected_sufficient_statistics(const ArrayXt<Type>& obs,
                                                       const ArrayXt<Type>& es) {
@@ -147,6 +169,22 @@ namespace niw {
         return ess;
     }
 
+    /*
+     * Computes a variational meanfield update in natural parameter form
+     * inplace.
+     *
+     * lrate     - The learning rate.
+     * bfactor   - The batch factor.
+     * emit_mo_0 - The prior moment parameters.
+     * emit_mo_N - The moment parameters.
+     * ess       - The expected sufficient statistics.
+     *
+     * Weighted sufficient statistics.
+     *
+     * s1 - \sum_{i=1}^N w_i
+     * s2 - \sum_{i=1}^N w_i*x_i
+     * s3 - \sum_{i=1}^N w_i(x_i*x_i^T)
+     */
     template <typename Type>
     void meanfield_sgd_update(Type lrate, Type bfactor,
                               const map_mo_params<Type>& emit_mo_0,

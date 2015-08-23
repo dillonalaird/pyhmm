@@ -35,6 +35,15 @@ namespace dir {
         return ess;
     }
 
+    /*
+     * Calculates the sufficient statistics for the dirichlet distribution.
+     *
+     * es - The expected states.
+     *
+     * Container for the sufficient statistics.
+     *
+     * ss - \sum_{i=2}^N expected_states_{i-1}^T*expected_states_i
+     */
     template <typename Type>
     MatrixXt<Type> sufficient_statistics(const ArrayXt<Type>& es) {
         MatrixXt<Type> ss = MatrixXt<Type>::Zero(es.cols(), es.cols());
@@ -45,6 +54,16 @@ namespace dir {
         return ss;
     }
 
+    /*
+     * Calculates the stochastic gradient descent meanfield update inplace.
+     *
+     * lrate   - The learning rate.
+     * bfactor - The batch factor.
+     *
+     * A_nat_0 - The prior natural parameters.
+     * A_nat_N - The natural parameters.
+     * ess     - The expected sufficient statistics.
+     */
     template <typename Type>
     void meanfield_sgd_update(Type lrate, Type bfactor,
                               const NPMatrix<Type>& A_nat_0,
