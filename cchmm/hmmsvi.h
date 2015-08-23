@@ -48,7 +48,7 @@ namespace hmmsvi {
     ArrayXt<Type> local_update(const ArrayXt<Type>& obs,
                                const VectorXt<Type>& pi,
                                const NPMatrix<Type>& A_nat_N,
-                               const std::vector<niw::mo_params<Type> >& emits_N) {
+                               const std::vector<niw::map_mo_params<Type> >& emits_N) {
         MatrixXt<Type> A = A_nat_N + MatrixXt<Type>::Ones(A_nat_N.rows(), A_nat_N.cols());
         MatrixXt<Type> A_mod = dir::expected_sufficient_statistics<Type>(A);
         A_mod = A_mod.array().exp().matrix();
@@ -86,10 +86,10 @@ namespace hmmsvi {
         NPMatrix<Type> A_nat_N(A_N, S, S);
         A_nat_N -= MatrixXt<Type>::Ones(S, S);
 
-        std::vector<niw::mo_params<Type> > emits_mo_0;
+        std::vector<niw::map_mo_params<Type> > emits_mo_0;
         for (int s = 0; s < S; ++s)
             emits_mo_0.push_back(niw::convert_to_struct(emits_0, D, s));
-        std::vector<niw::mo_params<Type> > emits_mo_N;
+        std::vector<niw::map_mo_params<Type> > emits_mo_N;
         for (int s = 0; s < S; ++s)
             emits_mo_N.push_back(niw::convert_to_struct(emits_N, D, s));
 
@@ -126,7 +126,14 @@ namespace hmmsvi {
             // global update
             int B = 2*L + 1;
             Type A_bfactor = (T - 2*L - 1)/(2*L*B);
-            dir::meanfield_sgd_update(lrate, A_bfactor, A_nat_0, A_nat_N, A_inter);
+            A_nat_N = dir::meanfield_sgd_update(lrate, A_bfactor, A_nat_0,
+                                                A_nat_N, A_inter);
+
+            Type e_bfactor = (T - 2*L - 1)/((2*L + 1)*B);
+            for (int s = 0; s < S; ++S) {
+                niw::meanfield_sgd_update(lrate, e_bfactor, emits_mo_0[s],
+                                          emits_mo_N[s], emits_inter[s]);
+            }
         }
     }
 }
