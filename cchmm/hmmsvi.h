@@ -126,8 +126,7 @@ namespace hmmsvi {
             // global update
             int B = 2*L + 1;
             Type A_bfactor = (T - 2*L - 1)/(2*L*B);
-            A_nat_N = dir::meanfield_sgd_update(lrate, A_bfactor, A_nat_0,
-                                                A_nat_N, A_inter);
+            dir::meanfield_sgd_update(lrate, A_bfactor, A_nat_0, A_nat_N, A_inter);
 
             Type e_bfactor = (T - 2*L - 1)/((2*L + 1)*B);
             for (int s = 0; s < S; ++S) {

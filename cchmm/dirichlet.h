@@ -46,11 +46,11 @@ namespace dir {
     }
 
     template <typename Type>
-    MatrixXt<Type> meanfield_sgd_update(Type lrate, Type bfactor,
-                                        const NPMatrix<Type>& A_nat_0,
-                                        const NPMatrix<Type>& A_nat_N,
-                                        const MatrixXt<Type>& ess) {
-        return (1 - lrate)*A_nat_N + lrate*(A_nat_0 + bfactor*ess);
+    void meanfield_sgd_update(Type lrate, Type bfactor,
+                              const NPMatrix<Type>& A_nat_0,
+                              NPMatrix<Type>& A_nat_N,
+                              const MatrixXt<Type>& ess) {
+        A_nat_N =  (1 - lrate)*A_nat_N + lrate*(A_nat_0 + bfactor*ess);
     }
 }
 
