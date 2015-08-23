@@ -19,10 +19,10 @@ namespace niw {
     template <typename T>
     struct map_mo_params {
         int D;
-        T* sigma_N;
-        T* mu_N;
-        T* kappa_N;
-        T* nu_N;
+        T* sigma;
+        T* mu;
+        T* kappa;
+        T* nu;
     };
 
     template <typename T>
@@ -71,10 +71,10 @@ namespace niw {
     template <typename T>
     nat_params<T> convert_mo_to_nat(const map_mo_params<T>& params) {
         int D = params.D;
-        NPMatrix<T> sigma(params.sigma_N, D, D);
-        NPVector<T> mu(params.mu_N, D, 1);
-        T& kappa = *(params.kappa_N);
-        T& nu = *(params.nu_N);
+        NPMatrix<T> sigma(params.sigma, D, D);
+        NPVector<T> mu(params.mu, D, 1);
+        T& kappa = *(params.kappa);
+        T& nu = *(params.nu);
 
         VectorXt<T> n1 = kappa*mu;
         T n2 = kappa;
@@ -110,10 +110,10 @@ namespace niw {
         ArrayXt<Type> rs = ArrayXt<Type>::Zero(obs.rows(), 1);
 
         int D = params.D;
-        NPMatrix<Type> sigma_N(params.sigma_N, D, D);
-        NPVector<Type> mu_N(params.mu_N, D, 1);
-        Type& kappa_N = *(params.kappa_N);
-        Type& nu_N = *(params.nu_N);
+        NPMatrix<Type> sigma_N(params.sigma, D, D);
+        NPVector<Type> mu_N(params.mu, D, 1);
+        Type& kappa_N = *(params.kappa);
+        Type& nu_N = *(params.nu);
 
         MatrixXt<Type> sigma_inv = sigma_N.inverse().eval();
         Type log_lambda_tilde = _log_lambda_tilde<Type>(sigma_inv, nu_N);
