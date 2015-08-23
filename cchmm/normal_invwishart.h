@@ -85,12 +85,12 @@ namespace niw {
     }
 
     template <typename T>
-    map_mo_params<T> convert_nat_to_mo(const nat_params<T>& params) {
-        T& kappa = params.n2;
+    mo_params<T> convert_nat_to_mo(const nat_params<T>& params) {
+        T kappa = params.n2;
         VectorXt<T> mu = params.n1/params.n2;
         MatrixXt<T> sigma = params.n3 - kappa*(mu*mu.transpose());
-        T& nu = params.n4 - 2 - mu.size();
-        return map_mo_params<T>{mu.size(), &sigma.data(), &mu.data(), kappa, nu};
+        T nu = params.n4 - 2 - mu.size();
+        return mo_params<T>{sigma, mu, kappa, nu};
     }
 
     template <typename Type>
@@ -164,7 +164,12 @@ namespace niw {
         emit_nat_N.n4 = (1 - lrate)*emit_nat_N.n4 + \
                         lrate*(emit_nat_0.n4 + bfactor*ess.s1);
 
-        //map_mo_params<Type> = emit_mo_N_up = convert_nat_to_mo<Type>
+        // Eigen types from eigen_types.h are row major
+        mo_params<Type> emit_mo_N_up = convert_nat_to_mo<Type>(emit_nat_N);
+        *(emit_mo_N.sigma) = *(emit_mo_N_up.sigma.data());
+        *(emit_mo_N.mu)    = *(emit_mo_N_up.mu.data());
+        *(emit_mo_N.kappa) = (emit_mo_N_up.kappa);
+        *(emit_mo_N.nu)    = (emit_mo_N_up.nu);
     }
 }
 
