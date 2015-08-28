@@ -37,14 +37,6 @@ namespace hmmsvi {
     }
 
     template <typename Type>
-    void global_update(int T, int L, Type lrate,
-                       const MatrixXt<Type>& A_0,
-                       const MatrixXt<Type>& A_N,
-                       const MatrixXt<Type>& A_inter,
-                       const std::vector<niw::e_suff_stats<Type> >& emits_inter) {
-    }
-
-    template <typename Type>
     ArrayXt<Type> local_update(const ArrayXt<Type>& obs,
                                const VectorXt<Type>& pi,
                                const NPMatrix<Type>& A_nat_N,
@@ -54,9 +46,10 @@ namespace hmmsvi {
         A_mod = A_mod.array().exp().matrix();
 
         VectorXt<Type> pi_mod = VectorXt<Type>::Zero(pi.size());
-        Type sum = math::digamma(pi_mod.sum() + eps);
+        Type sum = math::digamma(pi.sum() + eps);
         for (int i = 0; i < pi.size(); ++i)
             pi_mod(i) = math::digamma(pi(i) + eps) - sum;
+
         pi_mod = pi_mod.array().exp().matrix();
 
         ArrayXt<Type> elliks = ArrayXt<Type>::Zero(obs.rows(), emits_N.size());
