@@ -27,8 +27,8 @@ namespace dir {
         MatrixXt<Type> ess = MatrixXt<Type>::Zero(A.size(), A.size());
 
         VectorXt<Type> row_sums = A.rowwise().sum();
-        for (int i = 0; i < A.size(); ++i)
-            for (int j = 0; j < A.size(); ++j)
+        for (int i = 0; i < A.rows(); ++i)
+            for (int j = 0; j < A.cols(); ++j)
                 ess(i,j) = math::digamma(A.coeff(i,j) + eps) - \
                            math::digamma(row_sums.coeff(i) + eps);
 
