@@ -99,10 +99,11 @@ namespace hmmsvi {
                 mo::metaobs m = mo::metaobs_unif(T, L);
                 VectorXt<Type> pi = _calc_pi<Type>(A_nat_N);
 
-                ArrayXt<Type> obs_sub = e_obs.block(m.i1, 0, m.i2, 2);
+                ArrayXt<Type> obs_sub = e_obs.block(m.i1, 0, (m.i2 - m.i1) + 1, 2);
                 ArrayXt<Type> var_x = local_update(obs_sub, pi, A_nat_N, emits_mo_N);
 
                 // intermediate parameters
+                /*
                 MatrixXt<Type> A_i = dir::sufficient_statistics(var_x);
                 A_i -= MatrixXt<Type>::Ones(S, S);
                 A_inter += A_i;
@@ -114,9 +115,11 @@ namespace hmmsvi {
                     emits_inter[s].s2 += emit_i.s2;
                     emits_inter[s].s3 += emit_i.s3;
                 }
+                */
             }
 
             // global update
+            /*
             int B = 2*L + 1;
             Type A_bfactor = (T - 2*L - 1)/(2*L*B);
             dir::meanfield_sgd_update(lrate, A_bfactor, A_nat_0, A_nat_N, A_inter);
@@ -126,6 +129,7 @@ namespace hmmsvi {
                 niw::meanfield_sgd_update(lrate, e_bfactor, emits_mo_0[s],
                                           emits_mo_N[s], emits_inter[s]);
             }
+            */
         }
     }
 }
