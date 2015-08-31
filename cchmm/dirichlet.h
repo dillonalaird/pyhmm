@@ -24,7 +24,7 @@ namespace dir {
      */
     template <typename Type>
     MatrixXt<Type> expected_sufficient_statistics(const MatrixXt<Type>& A) {
-        MatrixXt<Type> ess = MatrixXt<Type>::Zero(A.size(), A.size());
+        MatrixXt<Type> ess = MatrixXt<Type>::Zero(A.rows(), A.cols());
 
         VectorXt<Type> row_sums = A.rowwise().sum();
         for (int i = 0; i < A.rows(); ++i)
