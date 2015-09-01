@@ -18,7 +18,10 @@ namespace fb {
                                const MatrixXt<Type>& A) {
         ArrayXt<Type> lalpha = ArrayXt<Type>::Zero(lliks.rows(), lliks.cols());
         Type cmax;
-        lalpha.row(0) = pi.array().log() + lliks.row(0);
+        // Need to declare it as an Array so it adds correctly. Might be issue
+        // with Vector not being row major?
+        ArrayXt<Type> pi_ = pi.array();
+        lalpha.row(0) = pi_.array().log() + lliks.row(0);
 
         for (int t = 0; t < lliks.rows() - 1; ++t) {
             cmax = lalpha.row(t).maxCoeff();
