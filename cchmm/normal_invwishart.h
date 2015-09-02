@@ -156,7 +156,7 @@ namespace niw {
     e_suff_stats<Type> expected_sufficient_statistics(const ArrayXt<Type>& obs,
                                                       const ArrayXt<Type>& es) {
         Type s1           = 0.0;
-        ArrayXt<Type> s2  = ArrayXt<Type>::Zero(obs.cols(), 1);
+        ArrayXt<Type>  s2 = ArrayXt<Type>::Zero(obs.cols(), 1);
         MatrixXt<Type> s3 = MatrixXt<Type>::Zero(obs.cols(), obs.cols());
 
         for (int i = 0; i < obs.rows(); ++i) {
