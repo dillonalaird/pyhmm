@@ -26,7 +26,13 @@ namespace hmmsvi {
     template <typename Type>
     VectorXt<Type> _calc_pi(const NPMatrix<Type>& A_nat_N) {
         // can't use NPMatrix<Type> as type
-        EigenSolver<MatrixXt<Type> > es(A_nat_N);
+        MatrixXt<Type> A_mean = MatrixXt<Type>::Zero(A_nat_N.rows(), A_nat_N.cols());
+        ArrayXt<Type> A_row_sums = A_nat_N.rowwise().sum();
+        for (int i = 0; i < A_nat_N.rows(); ++i)
+            for (int j = 0; j < A_nat_N.cols(); ++j)
+                A_mean(i,j) = A_nat_N(i,j)/A_row_sums(i);
+
+        EigenSolver<MatrixXt<Type> > es(A_mean);
         VectorXcd evals = es.eigenvalues();
 
         int argmax = 0;
@@ -58,8 +64,8 @@ namespace hmmsvi {
 
         ArrayXt<Type> lalpha = fb::forward_msgs(elliks, pi_mod, A_mod);
         ArrayXt<Type> lbeta  = fb::backward_msgs(elliks, A_mod);
+        ArrayXt<Type> es     = fb::expected_states(lalpha, lbeta);
 
-        ArrayXt<Type> es = fb::expected_states(lalpha, lbeta);
         es = es.exp();
         ArrayXt<Type> row_sums = es.rowwise().sum();
         for (int i = 0; i < es.rows(); ++i)
@@ -72,12 +78,15 @@ namespace hmmsvi {
     void infer(int D, int S, int T, Type* obs, Type* A_0, Type* A_N,
                Type* emits_0, Type* emits_N, Type tau, Type kappa, int L, int n,
                int itr) {
-        // pass in init and nat params?
         NPArray<Type> e_obs(obs, T, S);
         NPMatrix<Type> A_nat_0(A_0, S, S);
         A_nat_0 -= MatrixXt<Type>::Ones(S, S);
+        // for numerical stability
+        A_nat_0 += eps*MatrixXt<Type>::Ones(S, S);
         NPMatrix<Type> A_nat_N(A_N, S, S);
         A_nat_N -= MatrixXt<Type>::Ones(S, S);
+        // for numerical stability
+        A_nat_N += eps*MatrixXt<Type>::Ones(S, S);
 
         std::vector<niw::map_mo_params<Type> > emits_mo_0;
         for (int s = 0; s < S; ++s)
@@ -103,7 +112,6 @@ namespace hmmsvi {
                 ArrayXt<Type> var_x = local_update(obs_sub, pi, A_nat_N, emits_mo_N);
 
                 // intermediate parameters
-                /*
                 MatrixXt<Type> A_i = dir::sufficient_statistics(var_x);
                 A_i -= MatrixXt<Type>::Ones(S, S);
                 A_inter += A_i;
@@ -115,21 +123,17 @@ namespace hmmsvi {
                     emits_inter[s].s2 += emit_i.s2;
                     emits_inter[s].s3 += emit_i.s3;
                 }
-                */
             }
 
             // global update
-            /*
             int B = 2*L + 1;
             Type A_bfactor = (T - 2*L - 1)/(2*L*B);
             dir::meanfield_sgd_update(lrate, A_bfactor, A_nat_0, A_nat_N, A_inter);
 
             Type e_bfactor = (T - 2*L - 1)/((2*L + 1)*B);
-            for (int s = 0; s < S; ++S) {
+            for (int s = 0; s < S; ++s) 
                 niw::meanfield_sgd_update(lrate, e_bfactor, emits_mo_0[s],
                                           emits_mo_N[s], emits_inter[s]);
-            }
-            */
         }
     }
 }
