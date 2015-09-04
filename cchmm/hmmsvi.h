@@ -126,15 +126,17 @@ namespace hmmsvi {
             }
 
             // global update
-            int B = 2*L + 1;
-            Type A_bfactor = (T - 2*L - 1)/(2*L*B);
+            int B = 2.0*L + 1.0;
+            Type A_bfactor = (T - 2.0*L - 1.0)/(2.0*L*B);
             dir::meanfield_sgd_update(lrate, A_bfactor, A_nat_0, A_nat_N, A_inter);
 
-            Type e_bfactor = (T - 2*L - 1)/((2*L + 1)*B);
+            Type e_bfactor = (T - 2.0*L - 1.0)/((2.0*L + 1.0)*B);
             for (int s = 0; s < S; ++s) 
                 niw::meanfield_sgd_update(lrate, e_bfactor, emits_mo_0[s],
                                           emits_mo_N[s], emits_inter[s]);
         }
+
+        A_nat_N += MatrixXt<Type>::Ones(S, S);
     }
 }
 
