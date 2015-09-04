@@ -31,7 +31,7 @@ class HMMSVI(object):
         # TODO: might have to add epsilon for certain calculations involving the
         # transition matrix
         self.obs = obs
-        self.A_nat_0 = A_0 - 1
+        self.A_nat_0 = A_0 - 1 + eps
         self.A_nat_N = self.A_nat_0.copy()
         self.emits = emits
 
@@ -94,8 +94,9 @@ class HMMSVI(object):
             emit.meanfield_sgd_update(emits_inter[i], lrate, e_bfactor)
 
     def intermediate_pars(self, obs, var_x):
-        A_inter  = dir.sufficient_statistics(var_x)
-        A_inter -= 1
+        A_inter  = dir.sufficient_statistics(var_x) + (self.A_nat_0 + 1)
+        # convert back to natural parameter form
+        A_inter -= 1.0
 
         emits_inter = [list(emit.expected_sufficient_statistics(obs,
                             var_x[:,i].copy(order='C')))
