@@ -112,13 +112,14 @@ namespace hmmsvi {
                 ArrayXt<Type> var_x = local_update(obs_sub, pi, A_nat_N, emits_mo_N);
 
                 // intermediate parameters
-                MatrixXt<Type> A_i = dir::sufficient_statistics(var_x);
+                MatrixXt<Type> A_i = A_nat_0 + MatrixXt<Type>::Ones(S, S);
+                A_i += dir::sufficient_statistics(var_x);
                 A_i -= MatrixXt<Type>::Ones(S, S);
                 A_inter += A_i;
 
                 for (int s = 0; s < S; ++s) {
                     niw::e_suff_stats<Type> emit_i =  \
-                        niw::expected_sufficient_statistics(obs_sub, var_x);
+                        niw::expected_sufficient_statistics(obs_sub, var_x, s);
                     emits_inter[s].s1 += emit_i.s1;
                     emits_inter[s].s2 += emit_i.s2;
                     emits_inter[s].s3 += emit_i.s3;
