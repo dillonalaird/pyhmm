@@ -23,6 +23,13 @@ namespace hmmsvi {
 
     static const constexpr double eps = 0.000000001;
 
+    /*
+     * Computers the stationary distribution of the mean of the distribution for
+     * the current transition matrix.
+     *
+     * A_nat_N - The hyperparameters of the transition matrix in natural
+     *     parameter form.
+     */
     template <typename Type>
     VectorXt<Type> _calc_pi(const NPMatrix<Type>& A_nat_N) {
         // can't use NPMatrix<Type> as type
@@ -42,6 +49,15 @@ namespace hmmsvi {
         return es.eigenvectors().col(argmax).real().cwiseAbs();
     }
 
+    /*
+     * Cacluates the local update.
+     *
+     * obs     - The observations.
+     * pi      - The initial distribution.
+     * A_nat_N - The dirichlet hyperparameters of the transition matrix in
+     *     natural parameter form.
+     * emits_N - The emission hyperparameters in moment form.
+     */
     template <typename Type>
     ArrayXt<Type> local_update(const ArrayXt<Type>& obs,
                                const VectorXt<Type>& pi,
@@ -74,6 +90,25 @@ namespace hmmsvi {
         return es;
     }
 
+    /*
+     * Does stochastic variational inference on the given data.
+     *
+     * D       - The dimension of the observations.
+     * S       - The number of states.
+     * T       - The number of observations.
+     * obs     - The observations (row major).
+     * A_0     - The prior dirichlet parameters for the transition matrix.
+     * A_N     - The dirichlet parameters for the transition matrix.
+     * emits_0 - The prior hyperparameters for the emission distribution in
+     *     moment form.
+     * emits_N - The hyperparameters for the emission distribution in moment
+     *     form.
+     * tau     - Delay for learning rate, \tau >= 0.
+     * kappa   - Forgetting factor for learning rate, \kappa \in (0.5, 1].
+     * L       - Meta-observations will be of size 2*L + 1, L > 0.
+     * n       - The number of meta-oberservations in a minibatch.
+     * itr     - The number of iterations.
+     */
     template <typename Type>
     void infer(int D, int S, int T, Type* obs, Type* A_0, Type* A_N,
                Type* emits_0, Type* emits_N, Type tau, Type kappa, int L, int n,
@@ -137,6 +172,7 @@ namespace hmmsvi {
                                           emits_mo_N[s], emits_inter[s]);
         }
 
+        // convert natural parameters back to moment form before return
         A_nat_N += MatrixXt<Type>::Ones(S, S);
     }
 }
