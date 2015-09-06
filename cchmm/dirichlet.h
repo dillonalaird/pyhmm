@@ -69,7 +69,7 @@ namespace dir {
                               const NPMatrix<Type>& A_nat_0,
                               NPMatrix<Type>& A_nat_N,
                               const MatrixXt<Type>& ess) {
-        A_nat_N =  (1 - lrate)*A_nat_N + lrate*(A_nat_0 + bfactor*ess);
+        A_nat_N = (1 - lrate)*A_nat_N + lrate*(A_nat_0 + bfactor*ess);
     }
 }
 
