@@ -154,15 +154,16 @@ namespace niw {
      */
     template <typename Type>
     e_suff_stats<Type> expected_sufficient_statistics(const ArrayXt<Type>& obs,
-                                                      const ArrayXt<Type>& es) {
+                                                      const ArrayXt<Type>& es,
+                                                      int s) {
         Type s1           = 0.0;
         ArrayXt<Type>  s2 = ArrayXt<Type>::Zero(obs.cols(), 1);
         MatrixXt<Type> s3 = MatrixXt<Type>::Zero(obs.cols(), obs.cols());
 
         for (int i = 0; i < obs.rows(); ++i) {
-            s1 += es.coeff(i);
-            s2 += obs.row(i)*es.coeff(i);
-            s3 += obs.row(i).matrix().transpose()*obs.row(i).matrix()*es.coeff(i);
+            s1 += es.coeff(i, s);
+            s2 += obs.row(i)*es.coeff(i, s);
+            s3 += obs.row(i).matrix().transpose()*obs.row(i).matrix()*es.coeff(i, s);
         }
 
         e_suff_stats<Type> ess = {s1, s2, s3};
@@ -202,12 +203,13 @@ namespace niw {
         emit_nat_N.n4 = (1 - lrate)*emit_nat_N.n4 + \
                         lrate*(emit_nat_0.n4 + bfactor*ess.s1);
 
-        // Eigen types from eigen_types.h are row major
         mo_params<Type> emit_mo_N_up = convert_nat_to_mo<Type>(emit_nat_N);
-        *(emit_mo_N.sigma) = *(emit_mo_N_up.sigma.data());
-        *(emit_mo_N.mu)    = *(emit_mo_N_up.mu.data());
-        *(emit_mo_N.kappa) = (emit_mo_N_up.kappa);
-        *(emit_mo_N.nu)    = (emit_mo_N_up.nu);
+        // inplace updates
+        int D = emit_mo_0.D;
+        std::memcpy(emit_mo_N.sigma,  emit_mo_N_up.sigma.data(), sizeof(Type[D*D]));
+        std::memcpy(emit_mo_N.mu,     emit_mo_N_up.mu.data(),    sizeof(Type[D]));
+        std::memcpy(emit_mo_N.kappa, &emit_mo_N_up.kappa,        sizeof(Type));
+        std::memcpy(emit_mo_N.nu,    &emit_mo_N_up.nu,           sizeof(Type));
     }
 }
 
