@@ -15,7 +15,6 @@ def test_initialize():
     obs = np.zeros((10,2))
     A_0 = np.ones((2,2))
 
-    # just send these in in a list
     emit1 = np.zeros((2+3,2))
     emit1[:2,:2] = np.eye(2)
     emit1[2,:]   = np.ones(2)
@@ -29,28 +28,102 @@ def test_initialize():
     emit2[4,0]   = 5
 
     emits = np.vstack((emit1, emit2))
-
-    #emits_flat = np.zeros(S*(D*D + 3*D))
-    #offset1 = D*D + 3*D
-    #offset2 = D + 3
-    #for s in range(S):
-    #    emits_flat[(s*offset1):(s*offset1 + D*D)] = emits[(s*offset2):(s*offset2 + D)].flatten()
-    #    emits_flat[(s*offset1 + D*D):(s*offset1 + D*D + D)] = emits[(s*offset2 + D),:].flatten()
-    #    emits_flat[(s*offset1 + D*D + D)] = emits[(s*offset2 + D + 1),0].flatten()
-    #    emits_flat[(s*offset1 + D*D + 2*D)] = emits[(s*offset2 + D + 2),0].flatten()
-
-    #    print emits[(s*offset2):(s*offset2 + D)]
-    #    print emits[(s*offset2 + D),:]
-    #    print emits[(s*offset2 + D + 1),0]
-    #    print emits[(s*offset2 + D + 2),0]
+    print 'BEFORE'
+    print A_0
+    print emits
 
     tau = 1.
     kappa = 0.5
     L = 2
     n = 5
     itr = 5
-    hmm.infer(obs, A_0, emits, tau, kappa, L, n, itr)
+    A_N, emits_N = hmm.infer(obs, A_0, emits, tau, kappa, L, n, itr)
+    print 'AFTER'
+    print A_N
+    print emits_N
 
+
+def test_basic1():
+    D = 2
+    S = 2
+    obs = []
+    obs_i = np.array([[0., 0.], [5., 5.]])
+    for i in xrange(20):
+        obs.append(obs_i[np.round(i/20)])
+    obs = np.array(obs)
+
+    A_0 = np.ones((2,2))
+
+    emit1 = np.zeros((2+3,2))
+    emit1[:2,:2] = np.eye(2)
+    emit1[2,:]   = np.ones(2)
+    emit1[3,0]   = 0.5
+    emit1[4,0]   = 5
+
+    emit2 = np.zeros((2+3,2))
+    emit2[:2,:2] = np.eye(2)
+    emit2[2,:]   = 5.*np.ones(2)
+    emit2[3,0]   = 0.5
+    emit2[4,0]   = 5
+
+    emits = np.vstack((emit1, emit2))
+    print 'BEFORE'
+    print A_0
+    print emits
+
+    tau = 1.
+    kappa = 0.5
+    L = 2
+    n = 5
+    itr = 5
+    A_N, emits_N = hmm.infer(obs, A_0, emits, tau, kappa, L, n, itr)
+
+    print 'AFTER'
+    print A_N
+    print emits_N
+
+
+def test_basic2():
+    D = 2
+    S = 2
+    obs = []
+    obs_i = np.array([[0., 0.], [5., 5.]])
+    for i in xrange(20):
+        obs.append(obs_i[np.round(i/20)])
+    obs = np.array(obs)
+
+    A_0 = np.ones((2,2))
+
+    emit1 = np.zeros((2+3,2))
+    emit1[:2,:2] = np.eye(2)
+    emit1[2,:]   = 2.*np.ones(2)
+    emit1[3,0]   = 0.5
+    emit1[4,0]   = 5
+
+    emit2 = np.zeros((2+3,2))
+    emit2[:2,:2] = np.eye(2)
+    # off by one
+    emit2[2,:]   = 6.*np.ones(2)
+    emit2[3,0]   = 0.5
+    emit2[4,0]   = 5
+
+    emits = np.vstack((emit1, emit2))
+    print 'BEFORE'
+    print A_0
+    print emits
+
+    tau = 1.
+    kappa = 0.5
+    L = 2
+    n = 5
+    itr = 5
+    A_N, emits_N = hmm.infer(obs, A_0, emits, tau, kappa, L, n, itr)
+
+    print 'AFTER'
+    print A_N
+    print emits_N
 
 if __name__ == '__main__':
     test_initialize()
+    test_basic1()
+    test_basic2()
